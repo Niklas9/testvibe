@@ -19,7 +19,7 @@ import testvibe.core.utils as utils
 # TODO(niklas9):
 # * fix global settings, env variable?
 try:
-    import default_install.settings as settings
+    import project_template.settings as settings
 except ImportError:
     settings = None
 

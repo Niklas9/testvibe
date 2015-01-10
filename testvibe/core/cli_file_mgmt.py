@@ -9,7 +9,7 @@ import testvibe.core.utils as utils
 class CLIFileMgmt(object):
     """ CLI file management commands, such as startproject and addtestgroup """
 
-    DEFAULT_INSTALL_DIR = 'default_install'
+    PROJECT_TEMPLATE_DIR = 'project_template'
     FILENAME_SETTINGS = 'settings.py'
     FILENAME_RUNLIST = 'RUNLIST'
     FILENAME_TESTSUITE = 'example_testsuite.py'
@@ -55,7 +55,7 @@ class CLIFileMgmt(object):
     @staticmethod
     def _get_src_path(filename):
         return utils.get_path((os.path.dirname(testvibe.__file__),
-                               CLIFileMgmt.DEFAULT_INSTALL_DIR,
+                               CLIFileMgmt.PROJECT_TEMPLATE_DIR,
                                filename))
 
     @staticmethod

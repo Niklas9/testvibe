@@ -26,7 +26,7 @@ setuptools.setup(
         'nose==1.3.4',
         'coverage==4.0.3'
     ],
-    packages=['testvibe', 'testvibe/core', 'testvibe/default_install'],
+    packages=['testvibe', 'testvibe/core', 'testvibe/project_template'],
     include_package_data=True,
     scripts=['testvibe/tvctl'],
     classifiers=[
