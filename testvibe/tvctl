@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+import argparse
+
+import testvibe
+
+
+class CMDHandler(object):
+
+    args = None
+
+    def __init__(self, args):
+        self.args = args
+
+    def execute(self):
+        if self.args.version:
+            print(testvibe.VERSION)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Testvibe control')
+    #parser.add_argument('startproject')
+    parser.add_argument('version')
+    #parser.add_argument('run')
+    cmd_handler = CMDHandler(parser.parse_args())
+    cmd_handler.execute()
