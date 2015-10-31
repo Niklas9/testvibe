@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import argparse
+import sys
 
 import testvibe
 
@@ -15,12 +16,19 @@ class CMDHandler(object):
     def execute(self):
         if self.args.version:
             print(testvibe.VERSION)
+            sys.exit(0)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testvibe control')
-    #parser.add_argument('startproject')
-    parser.add_argument('version')
+    parser.add_argument('startproject')
+    parser.add_argument('addtestgroup')
+    parser.add_argument('run', action='store_true')
+    parser.add_argument('--version', action='store_true',
+                        help='show program\'s number and exit')
+    parser.add_argument('-v', '--verbosity', default=0,
+                        help=('verbosity level; 0=minimal output, '
+                              '1=normal output'))
     #parser.add_argument('run')
     cmd_handler = CMDHandler(parser.parse_args())
     cmd_handler.execute()
