@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import argparse
-import sys
 
 import testvibe
 
@@ -14,21 +13,33 @@ class CMDHandler(object):
         self.args = args
 
     def execute(self):
-        if self.args.version:
-            print(testvibe.VERSION)
-            sys.exit(0)
+        if self.args.cmd == 'startproject':
+            # TODO(niklas9):
+            # * initiate project
+            pass
+        elif self.args.cmd == 'run':
+            # TODO(niklas9):
+            # * initiate test run
+            pass
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testvibe control')
-    parser.add_argument('startproject')
-    parser.add_argument('addtestgroup')
-    parser.add_argument('run', action='store_true')
-    parser.add_argument('--version', action='store_true',
-                        help='show program\'s number and exit')
-    parser.add_argument('-v', '--verbosity', default=0,
-                        help=('verbosity level; 0=minimal output, '
-                              '1=normal output'))
-    #parser.add_argument('run')
+    subparsers = parser.add_subparsers()
+    # startproject
+    cmd_startproject = subparsers.add_parser('startproject',
+                                             help='start a new project')
+    cmd_startproject.add_argument('dir')
+    cmd_startproject.set_defaults(cmd='startproject')
+    # run
+    cmd_run = subparsers.add_parser('run', help='initiate test run')
+    cmd_run.add_argument('-p', '--parallel', default=1,
+                         help='number of testsuites to run in parallel')
+    cmd_run.add_argument('-v', '--verbosity', action='store_true',
+                        help='verbosity level')
+    cmd_run.set_defaults(cmd='run')
+    parser.add_argument('-V', '--version', action='version',
+                        version=testvibe.VERSION,
+                        help='show program\'s version number and exit')
     cmd_handler = CMDHandler(parser.parse_args())
     cmd_handler.execute()
