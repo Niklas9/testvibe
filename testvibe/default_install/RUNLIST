@@ -1,0 +1,2 @@
+# Add your test suites here in the default order you want to run them
+test_suite.py
