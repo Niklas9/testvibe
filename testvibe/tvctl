@@ -63,13 +63,21 @@ class CMDHandler(object):
     @staticmethod
     def exit_if_dir_exists(dir_name):
          if os.path.exists(dir_name):
-            print('command error: \'%s\' already exists'
-                  % os.path.abspath(dir_name))
+            sys.stderr.write('command error: \'%s\' already exists\n'
+                             % os.path.abspath(dir_name))
             sys.exit(1)
- 
+
+
+class ArgumentParserWithError(argparse.ArgumentParser):
+
+    def error(self, msg):
+        sys.stderr.write('error: %s\n' % msg)
+        self.print_help()
+        sys.exit(2)
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Testvibe control')
+    parser = ArgumentParserWithError(description='Testvibe control')
     subparsers = parser.add_subparsers()
     # startproject
     cmd_startproject = subparsers.add_parser('startproject',
