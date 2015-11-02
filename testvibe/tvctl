@@ -14,6 +14,8 @@ class CMDHandler(object):
 
     DEFAULT_INSTALL_DIR = 'default_install/'
     FILENAME_SETTINGS = 'settings.py'
+    FILENAME_RUNLIST = 'RUNLIST'
+    FILENAME_TESTSUITE = 'test_suite.py'
     PLACEHOLDER_NAME = '<Example>'
 
     args = None
@@ -23,27 +25,48 @@ class CMDHandler(object):
 
     def execute(self):
         if self.args.cmd == 'startproject':
-            if os.path.exists(self.args.name):
-                print('command error: \'%s\' already exists'
-                      % os.path.abspath(self.args.name))
-                sys.exit(1)
-            os.makedirs(self.args.name)
-            self.copy_settings_file(self.args.name)
+            self.cmd_startproject(self.args.name)
+        elif self.args.cmd == 'addtestgroup':
+            self.cmd_addtestgroup(self.args.name)
         elif self.args.cmd == 'run':
-            # TODO(niklas9):
-            # * initiate test run
-            raise NotImplementedError()
+            self.cmd_run()
 
-    def copy_settings_file(self, name):
-        src = ('%s/%s%s' % (os.path.dirname(testvibe.__file__),
-                            self.DEFAULT_INSTALL_DIR,
-                            self.FILENAME_SETTINGS))
-        dst = '%s/%s' % (name, self.FILENAME_SETTINGS)
-        with open(src, 'r') as f_src:
-            src_content = f_src.read()
-        with open(dst, 'w') as f_dst:
-            f_dst.write(src_content.replace(self.PLACEHOLDER_NAME, name))
+    def cmd_run(self):
+        raise NotImplementedError()
 
+    def cmd_startproject(self, name):
+        self.exit_if_dir_exists(name)
+        os.makedirs(name)
+        self.copy_file(name, CMDHandler.FILENAME_SETTINGS,
+                       search=CMDHandler.PLACEHOLDER_NAME, replace=name)
+
+    def cmd_addtestgroup(self, name):
+        self.exit_if_dir_exists(name)
+        os.makedirs(name)
+        self.copy_file(name, self.FILENAME_RUNLIST)
+        self.copy_file(name, self.FILENAME_TESTSUITE)
+
+    @staticmethod
+    def copy_file(dir_name, filename, search=None, replace=None):
+        with open(CMDHandler.get_src(filename), 'r') as f:
+            src_content = f.read()
+        if search is not None and replace is not None:
+            src_content = src_content.replace(search, replace)
+        with open('%s/%s' % (dir_name, filename), 'w') as f:
+            f.write(src_content)
+
+    @staticmethod
+    def get_src(filename):
+        return ('%s/%s%s' % (os.path.dirname(testvibe.__file__),
+                             CMDHandler.DEFAULT_INSTALL_DIR, filename))
+
+    @staticmethod
+    def exit_if_dir_exists(dir_name):
+         if os.path.exists(dir_name):
+            print('command error: \'%s\' already exists'
+                  % os.path.abspath(dir_name))
+            sys.exit(1)
+ 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testvibe control')
@@ -53,6 +76,13 @@ if __name__ == '__main__':
                                              help='start a new project')
     cmd_startproject.add_argument('name')
     cmd_startproject.set_defaults(cmd='startproject')
+    # addtestgroup
+    cmd_addtestgroup = subparsers.add_parser('addtestgroup',
+                                             help='add a new test group within '
+                                                  'a project')
+    cmd_addtestgroup.add_argument('name')
+    cmd_addtestgroup.set_defaults(cmd='addtestgroup')
+
     # run
     cmd_run = subparsers.add_parser('run', help='initiate test run')
     cmd_run.add_argument('-p', '--parallel', default=1,
