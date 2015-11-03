@@ -65,7 +65,7 @@ class CMDHandler(object):
          if os.path.exists(dir_name):
             sys.stderr.write('command error: \'%s\' already exists\n'
                              % os.path.abspath(dir_name))
-            sys.exit(1)
+            sys.exit(2)
 
 
 class ArgumentParserWithError(argparse.ArgumentParser):
