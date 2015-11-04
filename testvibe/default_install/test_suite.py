@@ -1,8 +1,4 @@
 
 import testvibe
 
-
-class MyTestSuite(testvibe.TestSuite):
-
-    def test_example(self):
-        pass
+# Create your test suite and test cases here
