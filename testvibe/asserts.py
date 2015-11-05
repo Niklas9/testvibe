@@ -1,6 +1,9 @@
 
 class AssertionException(Exception):  pass
 
+# TODO(niklas9):
+# * add the error messages in the AssertionException object instead of logging?
+#   the exception object could potentially take care of logging as well..?
 
 class Asserts(object):
 
@@ -35,6 +38,11 @@ class Asserts(object):
             raise AssertionException()
 
     def a_not_null(self, *args):  return self.assert_is_not_null(*args)
+
+    def assert_greater_or_equal(self, val1, val2):
+        self._log('greater or equal', '>=', val1, val2)
+        if not val1 >= val2:
+            raise AssertionException()
 
     def _log(self, msg, op, obj1, obj2):
         print 'assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,

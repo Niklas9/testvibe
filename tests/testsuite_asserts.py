@@ -21,6 +21,8 @@ class BasicTestSuite(testvibe.TestSuite):
     def test_not_null(self, v):
         self.assert_not_null(v)
 
+    def test_greater_or_equal(self, v1, v2):
+        self.assert_greater_or_equal(v1, v2)
 
 class TestAsserts(object):
 
@@ -66,3 +68,12 @@ class TestAsserts(object):
     @nose.tools.raises(testvibe.asserts.AssertionException)
     def test_neg_not_null(self):
         self.t.test_not_null(None)
+
+    def test_greater_or_equal(self):
+        self.t.test_greater_or_equal(2, 1)
+        self.t.test_greater_or_equal(2, 2)
+        self.t.test_greater_or_equal(1001, 997)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_or_equal(self):
+        self.t.test_greater_or_equal(1, 2)
