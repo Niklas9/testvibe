@@ -21,8 +21,42 @@ class BasicTestSuite(testvibe.TestSuite):
     def test_not_null(self, v):
         self.assert_not_null(v)
 
-    def test_greater_or_equal(self, v1, v2):
-        self.assert_greater_or_equal(v1, v2)
+    def test_greater_than(self, v1, v2):
+        self.assert_greater_than(v1, v2)
+
+    def test_greater_than_alias_1(self, v1, v2):
+        self.assert_gt(v1, v2)
+
+    def test_greater_than_alias_2(self, v1, v2):
+        self.a_gt(v1, v2)
+
+    def test_greater_than_or_equal(self, v1, v2):
+        self.assert_greater_than_or_equal(v1, v2)
+
+    def test_greater_than_or_equal_alias_1(self, v1, v2):
+        self.assert_gte(v1, v2)
+
+    def test_greater_than_or_equal_alias_2(self, v1, v2):
+        self.a_gte(v1, v2)
+
+    def test_lesser_than(self, v1, v2):
+        self.assert_lesser_than(v1, v2)
+
+    def test_lesser_than_alias_1(self, v1, v2):
+        self.assert_lt(v1, v2)
+
+    def test_lesser_than_alias_2(self, v1, v2):
+        self.a_lt(v1, v2)
+
+    def test_lesser_than_or_equal(self, v1, v2):
+        self.assert_lesser_than_or_equal(v1, v2)
+
+    def test_lesser_than_or_equal_alias_1(self, v1, v2):
+        self.assert_lte(v1, v2)
+
+    def test_lesser_than_or_equal_alias_2(self, v1, v2):
+        self.a_lte(v1, v2)
+
 
 class TestAsserts(object):
 
@@ -69,11 +103,70 @@ class TestAsserts(object):
     def test_neg_not_null(self):
         self.t.test_not_null(None)
 
-    def test_greater_or_equal(self):
-        self.t.test_greater_or_equal(2, 1)
-        self.t.test_greater_or_equal(2, 2)
-        self.t.test_greater_or_equal(1001, 997)
+    def test_greater_than(self):
+        self.t.test_greater_than(9, 8)
+        self.t.test_greater_than_alias_1(0.2, 0.1)
+        self.t.test_greater_than_alias_2(87, 12)
 
     @nose.tools.raises(testvibe.asserts.AssertionException)
-    def test_neg_greater_or_equal(self):
-        self.t.test_greater_or_equal(1, 2)
+    def test_neg_greater_than(self):
+        self.t.test_greater_than(22, 23)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_than_alias_1(self):
+        self.t.test_greater_than_alias_1(0.1, 0.2)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_than_alias_2(self):
+        self.t.test_greater_than_alias_2(23, 100)
+
+    def test_greater_than_or_equal(self):
+        self.t.test_greater_than_or_equal(2, 1)
+        self.t.test_greater_than_or_equal(2, 2)
+        self.t.test_greater_than_or_equal(1001, 997)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_than_or_equal(self):
+        self.t.test_greater_than_or_equal(1, 2)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_than_or_equal_alias_1(self):
+        self.t.test_greater_than_or_equal_alias_1(432, 432.01)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_greater_than_or_equal_alias_2(self):
+        self.t.test_greater_than_or_equal_alias_2(231, 1000)
+
+    def test_lesser_than(self):
+        self.t.test_lesser_than(8, 9)
+        self.t.test_lesser_than_alias_1(0.1, 0.2)
+        self.t.test_lesser_than_alias_2(11, 88)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than(self):
+        self.t.test_lesser_than(23, 22)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than_alias_1(self):
+        self.t.test_lesser_than_alias_1(0.2, 0.1)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than_alias_2(self):
+        self.t.test_lesser_than_alias_2(100, 23)
+
+    def test_lesser_than_or_equal(self):
+        self.t.test_lesser_than_or_equal(1, 2)
+        self.t.test_lesser_than_or_equal(2, 2)
+        self.t.test_lesser_than_or_equal(996, 1001)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than_or_equal(self):
+        self.t.test_lesser_than_or_equal(2, 1)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than_or_equal_alias_1(self):
+        self.t.test_lesser_than_or_equal_alias_1(432.01, 432)
+
+    @nose.tools.raises(testvibe.asserts.AssertionException)
+    def test_neg_lesser_than_or_equal_alias_2(self):
+        self.t.test_lesser_than_or_equal_alias_2(1000, 231)
