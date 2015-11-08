@@ -35,20 +35,20 @@ class CMDHandler(object):
         raise NotImplementedError()
 
     def cmd_startproject(self, name):
-        self.exit_if_dir_exists(name)
+        self._exit_if_dir_exists(name)
         os.makedirs(name)
-        self.copy_file(name, CMDHandler.FILENAME_SETTINGS,
+        self._copy_file(name, CMDHandler.FILENAME_SETTINGS,
                        search=CMDHandler.PLACEHOLDER_NAME, replace=name)
 
     def cmd_addtestgroup(self, name):
-        self.exit_if_dir_exists(name)
+        self._exit_if_dir_exists(name)
         os.makedirs(name)
-        self.copy_file(name, self.FILENAME_RUNLIST)
-        self.copy_file(name, self.FILENAME_TESTSUITE)
+        self._copy_file(name, self.FILENAME_RUNLIST)
+        self._copy_file(name, self.FILENAME_TESTSUITE)
 
     @staticmethod
-    def copy_file(dir_name, filename, search=None, replace=None):
-        with open(CMDHandler.get_src(filename), 'r') as f:
+    def _copy_file(dir_name, filename, search=None, replace=None):
+        with open(CMDHandler._get_src(filename), 'r') as f:
             src_content = f.read()
         if search is not None and replace is not None:
             src_content = src_content.replace(search, replace)
@@ -56,12 +56,12 @@ class CMDHandler(object):
             f.write(src_content)
 
     @staticmethod
-    def get_src(filename):
+    def _get_src(filename):
         return ('%s/%s%s' % (os.path.dirname(testvibe.__file__),
                              CMDHandler.DEFAULT_INSTALL_DIR, filename))
 
     @staticmethod
-    def exit_if_dir_exists(dir_name):
+    def _exit_if_dir_exists(dir_name):
          if os.path.exists(dir_name):
             sys.stderr.write('command error: \'%s\' already exists\n'
                              % os.path.abspath(dir_name))
