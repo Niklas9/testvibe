@@ -1,83 +1,16 @@
 #!/usr/bin/python
 
-import argparse
-import os
-import sys
 
 import testvibe
+import testvibe.core.cli as cli
 
 
 # TODO(niklas9):
 # * add some system tests for this
 
-class CMDHandler(object):
-
-    DEFAULT_INSTALL_DIR = 'default_install/'
-    FILENAME_SETTINGS = 'settings.py'
-    FILENAME_RUNLIST = 'RUNLIST'
-    FILENAME_TESTSUITE = 'test_suite.py'
-    PLACEHOLDER_NAME = '<Example>'
-
-    args = None
-
-    def __init__(self, args):
-        self.args = args
-
-    def execute(self):
-        if self.args.cmd == 'startproject':
-            self.cmd_startproject(self.args.name)
-        elif self.args.cmd == 'addtestgroup':
-            self.cmd_addtestgroup(self.args.name)
-        elif self.args.cmd == 'run':
-            self.cmd_run()
-
-    def cmd_run(self):
-        raise NotImplementedError()
-
-    def cmd_startproject(self, name):
-        self._exit_if_dir_exists(name)
-        os.makedirs(name)
-        self._copy_file(name, CMDHandler.FILENAME_SETTINGS,
-                       search=CMDHandler.PLACEHOLDER_NAME, replace=name)
-
-    def cmd_addtestgroup(self, name):
-        self._exit_if_dir_exists(name)
-        os.makedirs(name)
-        self._copy_file(name, self.FILENAME_RUNLIST)
-        self._copy_file(name, self.FILENAME_TESTSUITE)
-
-    @staticmethod
-    def _copy_file(dir_name, filename, search=None, replace=None):
-        with open(CMDHandler._get_src(filename), 'r') as f:
-            src_content = f.read()
-        if search is not None and replace is not None:
-            src_content = src_content.replace(search, replace)
-        with open('%s/%s' % (dir_name, filename), 'w') as f:
-            f.write(src_content)
-
-    @staticmethod
-    def _get_src(filename):
-        return ('%s/%s%s' % (os.path.dirname(testvibe.__file__),
-                             CMDHandler.DEFAULT_INSTALL_DIR, filename))
-
-    @staticmethod
-    def _exit_if_dir_exists(dir_name):
-         if os.path.exists(dir_name):
-            sys.stderr.write('command error: \'%s\' already exists\n'
-                             % os.path.abspath(dir_name))
-            sys.exit(2)
-
-
-class ArgumentParserWithError(argparse.ArgumentParser):
-
-    def error(self, msg):
-        sys.stderr.write('error: %s\n' % msg)
-        self.print_help()
-        sys.exit(2)
-
 
 if __name__ == '__main__':
-    parser = ArgumentParserWithError(description='Testvibe control')
+    parser = cli.ArgumentParserWithError(description='Testvibe control')
     subparsers = parser.add_subparsers()
     # startproject
     cmd_startproject = subparsers.add_parser('startproject',
@@ -101,5 +34,5 @@ if __name__ == '__main__':
     parser.add_argument('-V', '--version', action='version',
                         version=testvibe.VERSION,
                         help='show program\'s version number and exit')
-    cmd_handler = CMDHandler(parser.parse_args())
+    cmd_handler = cli.CLI(parser.parse_args())
     cmd_handler.execute()
