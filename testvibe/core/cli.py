@@ -1,9 +1,10 @@
 
+import argparse
 import os
 import sys
 import re
 
-import argparse
+import testvibe
 
 
 class CLI(object):
