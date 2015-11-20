@@ -5,7 +5,7 @@ class Log(object):
         pass
 
     def debug(self, msg):
-        print 'DEBUG: %s' % msg
+        print('DEBUG: %s' % msg)
 
     def error(self, msg):
-        print 'ERROR: %s' % msg
+        print('ERROR: %s' % msg)

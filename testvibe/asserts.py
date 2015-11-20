@@ -72,15 +72,15 @@ class Asserts(object):
     def a_lte(self, *args):  return self.assert_lesser_than_or_equal(*args)
 
     def _log(self, msg, op, obj1, obj2):
-        print 'assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
-                                          self._log_obj_fmt(obj2))
+        print('assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
+                                          self._log_obj_fmt(obj2)))
 
     def _log_obj_fmt(self, obj):
         return '%r, %s, %s' % (obj, obj, type(obj))
 
     def _log(self, msg, op, obj1, obj2):
-        print 'assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
-                                          self._log_obj_fmt(obj2))
+        print('assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
+                                          self._log_obj_fmt(obj2)))
 
     def _log_obj_fmt(self, obj):
         return '%r, %s, %s' % (obj, obj, type(obj))
