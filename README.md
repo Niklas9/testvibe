@@ -1,6 +1,5 @@
 # Testvibe
-![Travis.ci build status]
-(https://travis-ci.org/Niklas9/testvibe.svg?branch=master)
+[![Build Status](https://travis-ci.org/Niklas9/testvibe.svg?branch=master)](https://travis-ci.org/Niklas9/testvibe)
 
 Testvibe is a high-level Python test framework designed for RESTful JSON APIs.
 
