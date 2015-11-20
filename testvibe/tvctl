@@ -1,38 +1,10 @@
 #!/usr/bin/python
 
-
-import testvibe
 import testvibe.core.cli as cli
 
 
 # TODO(niklas9):
 # * add some system tests for this
-
-
 if __name__ == '__main__':
-    parser = cli.ArgumentParserWithError(description='Testvibe control')
-    subparsers = parser.add_subparsers()
-    # startproject
-    cmd_startproject = subparsers.add_parser('startproject',
-                                             help='start a new project')
-    cmd_startproject.add_argument('name')
-    cmd_startproject.set_defaults(cmd='startproject')
-    # addtestgroup
-    cmd_addtestgroup = subparsers.add_parser('addtestgroup',
-                                             help='add a new test group within '
-                                                  'a project')
-    cmd_addtestgroup.add_argument('name')
-    cmd_addtestgroup.set_defaults(cmd='addtestgroup')
-
-    # run
-    cmd_run = subparsers.add_parser('run', help='initiate test run')
-    cmd_run.add_argument('-p', '--parallel', default=1,
-                         help='number of testsuites to run in parallel')
-    cmd_run.add_argument('-v', '--verbosity', action='store_true',
-                        help='verbosity level')
-    cmd_run.set_defaults(cmd='run')
-    parser.add_argument('-V', '--version', action='version',
-                        version=testvibe.VERSION,
-                        help='show program\'s version number and exit')
-    cmd_handler = cli.CLI(parser.parse_args())
-    cmd_handler.execute()
+    c = cli.CLI()
+    c.run()
