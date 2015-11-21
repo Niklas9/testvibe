@@ -13,7 +13,7 @@ class Log(object):
     LOG_FMT = '%s|%s|%s|%s'  # timestamp, pid, debug level, msg
     LEVEL_INFO = 'INFO'
     LEVEL_DEBUG = 'DEBUG'
-    LEVEL_WARN = 'WARNING'
+    LEVEL_WARNING = 'WARN'
     LEVEL_ERROR = 'ERROR'
 
     log_level = None
@@ -32,7 +32,9 @@ class Log(object):
         self._log(self.LEVEL_DEBUG, msg)
 
     def warn(self, msg):
-        self._log(self.LEVEL_WARN, msg)
+        self._log(self.LEVEL_WARNING, msg)
+
+    def warning(self, msg):  self.warn(msg)
 
     def error(self, msg):
         self._log(self.LEVEL_ERROR, msg)
