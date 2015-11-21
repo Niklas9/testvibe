@@ -33,7 +33,7 @@ class Testsuite(asserts.Asserts):
         self.setup()
         try:
             test_method(*args, **kwargs)
-        except asserts.AssertionException, e:
+        except asserts.AssertionException as e:
             print('assertion error')
         self.teardown()
 
