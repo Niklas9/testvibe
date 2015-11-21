@@ -22,7 +22,7 @@ class Testsuite(asserts.Asserts):
         self.results = []
         asserts.Asserts.__init__(self) #, self.results)
         self.log = logger.Log()
-        self.api = api_controller.APIController()
+        self.api = api_controller.APIController(self.log)
 
     def run(self):
         raise NotImplementedError()

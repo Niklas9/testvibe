@@ -6,6 +6,9 @@ class AssertionException(Exception):  pass
 #   the exception object could potentially take care of logging as well..?
 # * add "assert_in" for checking if keys are in json
 
+# NOTE(niklas9):
+# * this is an abstract class, self.log needs to be set
+
 class Asserts(object):
 
     def __init__(self):
@@ -72,16 +75,10 @@ class Asserts(object):
     def assert_lte(self, *args):  return self.assert_lesser_than_or_equal(*args)
     def a_lte(self, *args):  return self.assert_lesser_than_or_equal(*args)
 
-    def _log(self, msg, op, obj1, obj2):
-        print('assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
-                                          self._log_obj_fmt(obj2)))
+    def _log(self, assert_type, op, obj1, obj2):
+        msg = ('assert %s (%s) %s (%s)' % (assert_type, self._log_fmt(obj1),
+                                           op, self._log_fmt(obj2)))
+        self.log.debug(msg)
 
-    def _log_obj_fmt(self, obj):
-        return '%r, %s, %s' % (obj, obj, type(obj))
-
-    def _log(self, msg, op, obj1, obj2):
-        print('assert %s <%s> %s <%s>' % (msg, self._log_obj_fmt(obj1), op,
-                                          self._log_obj_fmt(obj2)))
-
-    def _log_obj_fmt(self, obj):
-        return '%r, %s, %s' % (obj, obj, type(obj))
+    def _log_fmt(self, obj):
+        return '%r, %s' % (obj, type(obj))
