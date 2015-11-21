@@ -2,7 +2,7 @@
 
 import testvibe
 
-class BasicTestSuite(testvibe.TestSuite):  pass
+class BasicTestSuite(testvibe.Testsuite):  pass
 
 
 class TestSetupTeardown(object):
@@ -16,4 +16,4 @@ class TestSetupTeardown(object):
         self.t = None
 
     def test_class_type(self):
-        assert isinstance(self.t, testvibe.TestSuite)
+        assert isinstance(self.t, testvibe.Testsuite)

@@ -1,9 +1,10 @@
 
-import testvibe.logger as logger
+import testvibe.api_controller as api_controller
 import testvibe.asserts as asserts
+import testvibe.logger as logger
 
 
-class TestSuite(asserts.Asserts):
+class Testsuite(asserts.Asserts):
 
     # TODO(niklas9):
     # * make 
@@ -15,11 +16,26 @@ class TestSuite(asserts.Asserts):
     #   arg flag perhaps..
     results = None
     log = None
+    api = None
 
     def __init__(self):
         self.results = []
         asserts.Asserts.__init__(self) #, self.results)
         self.log = logger.Log()
+        self.api = api_controller.APIController()
+
+    def run(self):
+        raise NotImplementedError()
+
+    def test(self, test_id, test_method, *args, **kwargs):
+        # TODO(niklas9):
+        # * timers etc here, to measure, for timeout etc
+        self.setup()
+        try:
+            test_method(*args, **kwargs)
+        except asserts.AssertionException, e:
+            print('assertion error')
+        self.teardown()
 
     def setup(self):
         # TODO(niklas9):
@@ -30,4 +46,3 @@ class TestSuite(asserts.Asserts):
         # TODO(niklas9):
         # * add logging
         pass
-

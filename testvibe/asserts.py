@@ -4,6 +4,7 @@ class AssertionException(Exception):  pass
 # TODO(niklas9):
 # * add the error messages in the AssertionException object instead of logging?
 #   the exception object could potentially take care of logging as well..?
+# * add "assert_in" for checking if keys are in json
 
 class Asserts(object):
 

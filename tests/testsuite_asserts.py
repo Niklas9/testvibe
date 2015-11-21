@@ -4,7 +4,7 @@ import nose
 import testvibe
 
 
-class BasicTestSuite(testvibe.TestSuite):
+class BasicTestSuite(testvibe.Testsuite):
 
     def test_equal(self, v1, v2):
         self.assert_equal(v1, v2)
