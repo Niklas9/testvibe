@@ -12,7 +12,7 @@ class CLIHandler(object):
     DEFAULT_INSTALL_DIR = 'default_install/'
     FILENAME_SETTINGS = 'settings.py'
     FILENAME_RUNLIST = 'RUNLIST'
-    FILENAME_TESTSUITE = 'test_suite.py'
+    FILENAME_TESTSUITE = 'example_testsuite.py'
     PLACEHOLDER_NAME = '<Example>'
     RE_VALID_DIR_NAME = '^[A-Za-z0-9-]+$'
 

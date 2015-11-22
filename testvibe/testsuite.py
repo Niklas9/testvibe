@@ -38,11 +38,9 @@ class Testsuite(asserts.Asserts):
         self.teardown()
 
     def setup(self):
-        # TODO(niklas9):
-        # * add logging here..
+        # NOTE(niklas9):  to be overriden by inherting class
         pass
 
     def teardown(self):
-        # TODO(niklas9):
-        # * add logging
+        # NOTE(niklas9):  to be overriden by inherting class
         pass
