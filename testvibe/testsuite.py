@@ -45,9 +45,9 @@ class Testsuite(asserts.Asserts):
             self.teardown()
 
     def setup(self):
-        # NOTE(niklas9):  to be overriden by inherting class
+        # NOTE(niklas9):  to be overriden by subclass
         pass
 
     def teardown(self):
-        # NOTE(niklas9):  to be overriden by inherting class
+        # NOTE(niklas9):  to be overriden by subclass
         pass
