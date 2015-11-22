@@ -1,4 +1,6 @@
 
+import traceback
+
 import testvibe.api_controller as api_controller
 import testvibe.asserts as asserts
 import testvibe.logger as logger
@@ -14,6 +16,8 @@ class Testsuite(asserts.Asserts):
     # * add assertions
     # * add result metrics.. report continuously or in the end? should be an
     #   arg flag perhaps..
+    # * return bad unix exit code when any of the testcases in the
+    #   testsuite fails
     results = None
     log = None
     api = None
@@ -31,11 +35,14 @@ class Testsuite(asserts.Asserts):
         # TODO(niklas9):
         # * timers etc here, to measure, for timeout etc
         self.setup()
+        self.log.info('exectuing %s, %s...' % (test_id, test_method.func_name))
         try:
             test_method(*args, **kwargs)
         except asserts.AssertionException as e:
-            print('assertion error')
-        self.teardown()
+            self.log.error(e)
+            self.log.debug(traceback.format_exc())
+        else:
+            self.teardown()
 
     def setup(self):
         # NOTE(niklas9):  to be overriden by inherting class

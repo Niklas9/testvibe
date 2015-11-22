@@ -22,6 +22,7 @@ class ExampleTestsuite(testvibe.Testsuite):
 		self.assert_equal(r.status_code, 200)
 		country = json['query']['results']['channel']['location']['country']
 		self.assert_equal(country, 'United States')
+		self.assert_not_equal(country, 'Sweden')
 
 
 if __name__ == '__main__':
