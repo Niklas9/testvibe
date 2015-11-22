@@ -6,5 +6,5 @@ import testvibe.core.cli as cli
 # TODO(niklas9):
 # * add some system tests for this
 if __name__ == '__main__':
-    c = cli.CLI()
-    c.run()
+    tvctl = cli.CLI()
+    tvctl.run()
