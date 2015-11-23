@@ -35,14 +35,25 @@ class Testsuite(asserts.Asserts):
         # TODO(niklas9):
         # * timers etc here, to measure, for timeout etc
         self.setup()
-        self.log.info('exectuing %s, %s...' % (test_id, test_method.func_name))
+        test_id_method = '%s (%s)' % (test_method.func_name, test_id)
+        self.log.info('executing %s...' % test_id_method)
         try:
             test_method(*args, **kwargs)
         except asserts.AssertionException as e:
             self.log.error(e)
             self.log.debug(traceback.format_exc())
-        else:
+        finally:
+            success_counter, total_counter = self.get_assert_counters()
+            if success_counter == total_counter:
+                self.log.debug('%d/%d asserts successful in %s'
+                               % (success_counter, total_counter,
+                                  test_id_method))
+            else:
+                self.log.warn('%d/%d asserts FAILED in %s'
+                              % ((total_counter-success_counter),
+                                  total_counter, test_id_method))
             self.teardown()
+            self.reset_assert_counter()
 
     def setup(self):
         # NOTE(niklas9):  to be overriden by subclass
