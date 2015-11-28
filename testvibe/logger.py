@@ -19,15 +19,18 @@ class Log(object):
     LEVEL_DEBUG = 'DEBUG'
     LEVEL_WARNING = 'WARN'
     LEVEL_ERROR = 'ERROR'
-    LOG_LEVELS = (1, 2)  # 1 = DEBUG, 2 = limited/production
+    LOG_LEVEL_PROD = 1
+    LOG_LEVEL_DEBUG = 2
 
     log_level = None
     queue = None
     _instance = None  # singleton instance
 
     def __init__(self, log_level=None):
-        # TODO(niklas9):
-        # * add at least 2 log levels here, one with debug and one without
+        if log_level is None:
+            log_level = self.LOG_LEVEL_DEBUG  # default to debug
+        if log_level not in (self.LOG_LEVEL_PROD, self.LOG_LEVEL_DEBUG):
+            raise InvalidLogLevelException(log_level)
         self.log_level = log_level
         self.queue = queue.Queue()  # FIFO
         t = threading.Thread(target=self._log_worker)
@@ -43,9 +46,8 @@ class Log(object):
         self._log(self.LEVEL_INFO, msg)
 
     def debug(self, msg):
-        # TODO(niklas9):
-        # * take care of log level here
-        self._log(self.LEVEL_DEBUG, msg)
+        if self.log_level == self.LOG_LEVEL_DEBUG:
+            self._log(self.LEVEL_DEBUG, msg)
 
     def warn(self, msg):
         self._log(self.LEVEL_WARNING, msg)
