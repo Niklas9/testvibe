@@ -9,6 +9,9 @@ import sys
 import threading
 
 
+LOG_LEVEL_PROD = 1
+LOG_LEVEL_DEBUG = 2
+
 class InvalidLogLevelException(Exception):  pass
 
 class Log(object):
@@ -19,8 +22,6 @@ class Log(object):
     LEVEL_DEBUG = 'DEBUG'
     LEVEL_WARNING = 'WARN'
     LEVEL_ERROR = 'ERROR'
-    LOG_LEVEL_PROD = 1
-    LOG_LEVEL_DEBUG = 2
 
     log_level = None
     queue = None
@@ -28,8 +29,8 @@ class Log(object):
 
     def __init__(self, log_level=None):
         if log_level is None:
-            log_level = self.LOG_LEVEL_DEBUG  # default to debug
-        if log_level not in (self.LOG_LEVEL_PROD, self.LOG_LEVEL_DEBUG):
+            log_level = LOG_LEVEL_DEBUG  # default to debug
+        if log_level not in (LOG_LEVEL_PROD, LOG_LEVEL_DEBUG):
             raise InvalidLogLevelException(log_level)
         self.log_level = log_level
         self.queue = queue.Queue()  # FIFO
@@ -46,7 +47,7 @@ class Log(object):
         self._log(self.LEVEL_INFO, msg)
 
     def debug(self, msg):
-        if self.log_level == self.LOG_LEVEL_DEBUG:
+        if self.log_level == LOG_LEVEL_DEBUG:
             self._log(self.LEVEL_DEBUG, msg)
 
     def warn(self, msg):

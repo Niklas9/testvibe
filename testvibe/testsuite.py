@@ -30,9 +30,9 @@ class Testsuite(asserts.Asserts):
     def __init__(self):
         self.results = []
         asserts.Asserts.__init__(self)
-        log_level = 2
+        log_level = logger.LOG_LEVEL_DEBUG
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
-            log_level = 1
+            log_level = logger.LOG_LEVEL_PROD
         self.log = logger.Log(log_level=log_level)
         self.api = api_controller.APIController(self.log)
 
