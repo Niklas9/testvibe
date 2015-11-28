@@ -27,8 +27,26 @@ class BasicTestSuite(testvibe.Testsuite):
     def test_null(self, v):
         self.assert_null(v)
 
+    def test_null_alias_1(self, v):
+        self.a_null(v)
+
     def test_not_null(self, v):
         self.assert_not_null(v)
+
+    def test_not_null_alias_1(self, v):
+        self.a_not_null(v)
+
+    def test_in(self, v, l):
+        self.assert_in(v, l)
+
+    def test_in_alias_1(self, v, l):
+        self.a_in(v, l)
+
+    def test_not_in(self, v, l):
+        self.assert_not_in(v, l)
+
+    def test_not_in_alias_1(self, v, l):
+        self.a_not_in(v, l)
 
     def test_greater_than(self, v1, v2):
         self.assert_greater_than(v1, v2)
@@ -117,17 +135,49 @@ class TestAsserts(object):
 
     def test_null(self):
         self.t.test_null(None)
+        self.t.test_null_alias_1(None)
 
     @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNull)
     def test_neg_null(self):
         self.t.test_null('None')
 
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNull)
+    def test_neg_null_alias_1(self):
+        self.t.test_null_alias_1('None')
+
     def test_not_null(self):
         self.t.test_not_null('None')
+        self.t.test_not_null_alias_1('None')
 
     @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotNull)
     def test_neg_not_null(self):
         self.t.test_not_null(None)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotNull)
+    def test_neg_not_null_alias_1(self):
+        self.t.test_not_null_alias_1(None)
+
+    def test_in(self):
+        self.t.test_in('a', ['c', 'b', 'a'])
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIn)
+    def test_neg_in(self):
+        self.t.test_in('None', ('f', 'c', 'enoN'))
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIn)
+    def test_neg_in_alias_1(self):
+        self.t.test_in_alias_1('None', ('f', 'c', 'enoN'))
+
+    def test_not_in(self):
+        self.t.test_not_in('a', ['c', 'b', '0'])
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionNotIn)
+    def test_neg_not_in(self):
+        self.t.test_not_in('None', ('f', 'None', 'enoN'))
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionNotIn)
+    def test_neg_not_in_alias_1(self):
+        self.t.test_not_in_alias_1('None', ('f', 'None', 'enoN'))
 
     def test_greater_than(self):
         self.t.test_greater_than(9, 8)

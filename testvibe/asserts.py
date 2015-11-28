@@ -4,6 +4,8 @@ class AssertionExceptionEqual(AssertionException):  pass
 class AssertionExceptionNotEqual(AssertionException):  pass
 class AssertionExceptionIsNull(AssertionException):  pass
 class AssertionExceptionIsNotNull(AssertionException):  pass
+class AssertionExceptionIn(AssertionException):  pass
+class AssertionExceptionNotIn(AssertionException):  pass
 class AssertionExceptionGreaterThan(AssertionException):  pass
 class AssertionExceptionGreaterThanOrEqual(AssertionException):  pass
 class AssertionExceptionLesserThan(AssertionException):  pass
@@ -12,7 +14,6 @@ class AssertionExceptionLesserThanOrEqual(AssertionException):  pass
 # TODO(niklas9):
 # * add the error messages in the AssertionException object instead of logging?
 #   the exception object could potentially take care of logging as well..?
-# * add "assert_in" for checking if keys are in json
 # * add tests for assert counters
 
 # NOTE(niklas9):
@@ -30,6 +31,10 @@ class Asserts(object):
     LOG_IS_NULL_OP = '=='
     LOG_IS_NOT_NULL = 'is NOT null'
     LOG_IS_NOT_NULL_OP = '!='
+    LOG_IN = 'in'
+    LOG_IN_OP = LOG_IN
+    LOG_NOT_IN = 'NOT in'
+    LOG_NOT_IN_OP = LOG_NOT_IN
     LOG_GREATER_THAN = 'greater'
     LOG_GREATER_THAN_OP = '>'
     LOG_GREATER_THAN_OR_EQUAL = 'greater or equal'
@@ -76,7 +81,7 @@ class Asserts(object):
         self._log(self.LOG_IS_NULL, self.LOG_IS_NULL_OP, obj, None)
         self._incr_success_counter()
 
-    def a_null(self, *args):  return self.assert_is_null(*args)
+    def a_null(self, *args):  return self.assert_null(*args)
 
     def assert_not_null(self, obj):
         self._incr_total_counter()
@@ -87,7 +92,27 @@ class Asserts(object):
         self._log(self.LOG_IS_NOT_NULL, self.LOG_IS_NOT_NULL_OP, obj, None)
         self._incr_success_counter()
 
-    def a_not_null(self, *args):  return self.assert_is_not_null(*args)
+    def a_not_null(self, *args):  return self.assert_not_null(*args)
+
+    def assert_in(self, val, l):
+        self._incr_total_counter()
+        if val not in l:
+            msg = self._log_fmt(self.LOG_IN, self.LOG_NOT_IN_OP, val, l)
+            raise AssertionExceptionIn(msg)
+        self._log(self.LOG_IN, self.LOG_IN_OP, val, l)
+        self._incr_success_counter()
+
+    def a_in(self, *args):  return self.assert_in(*args)
+
+    def assert_not_in(self, val, l):
+        self._incr_total_counter()
+        if val in l:
+            msg = self._log_fmt(self.LOG_NOT_IN, self.LOG_IN_OP, val, l)
+            raise AssertionExceptionNotIn(msg)
+        self._log(self.LOG_NOT_IN, self.LOG_NOT_IN_OP, val, l)
+        self._incr_success_counter()
+
+    def a_not_in(self, *args):  return self.assert_not_in(*args)
 
     def assert_greater_than(self, val1, val2):
         self._incr_total_counter()
