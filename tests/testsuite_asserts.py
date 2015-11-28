@@ -246,3 +246,22 @@ class TestAsserts(object):
     @nose.tools.raises(testvibe.asserts.AssertionExceptionLesserThanOrEqual)
     def test_neg_lesser_than_or_equal_alias_2(self):
         self.t.test_lesser_than_or_equal_alias_2(1000, 231)
+
+    def test_assert_counters(self):
+        assert self.t.get_assert_counters() == (0, 0)
+        self.t.test_equal('A', 'A')
+        assert self.t.get_assert_counters() == (1, 1)
+        self.t.test_null(None)
+        self.t.test_lesser_than_or_equal(7, 9)
+        assert self.t.get_assert_counters() == (3, 3)
+        try:
+            self.t.test_in(3, [1, 2, 4])
+        except testvibe.asserts.AssertionExceptionIn as e:
+            pass
+        assert self.t.get_assert_counters() == (3, 4)
+
+    def test_assert_counters_reset(self):
+        assert self.t.get_assert_counters() == (0, 0)
+        self.t.test_equal('A', 'A')
+        self.t.reset_assert_counter()
+        assert self.t.get_assert_counters() == (0, 0)
