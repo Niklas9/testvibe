@@ -1,5 +1,4 @@
 
-import nose
 
 import testvibe.core.cli_handler as cli_handler
 
