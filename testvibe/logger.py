@@ -47,7 +47,7 @@ class Log(object):
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(Log, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(Log, cls).__new__(cls)
         return cls._instance
 
     def info(self, msg):
@@ -70,7 +70,6 @@ class Log(object):
 
     def _log_worker(self):
         while True:
-            time.sleep(2)
             try:
                 log_level, msg = self.queue.get(block=True)
             except queue.Empty:
