@@ -1,4 +1,5 @@
 
+import atexit
 import datetime
 import os
 try:
@@ -7,6 +8,7 @@ except ImportError:
     import Queue as queue  # fallback for Python 2.x
 import sys
 import threading
+import time
 
 
 LOG_LEVEL_PROD = 1
@@ -22,10 +24,13 @@ class Log(object):
     LEVEL_DEBUG = 'DEBUG'
     LEVEL_WARNING = 'WARN'
     LEVEL_ERROR = 'ERROR'
+    LOG_FLUSH_TIMEOUT_CHECK = 0.1  # seconds
+    LOG_FLUSH_TIMEOUT_WARN = 0.5  # seconds
+    LOG_FLUSH_TIMEOUT = 5  # seconds
 
     log_level = None
     queue = None
-    _instance = None  # singleton instance
+    _instance = None  # placeholder for singleton instance
 
     def __init__(self, log_level=None):
         if log_level is None:
@@ -35,7 +40,9 @@ class Log(object):
         self.log_level = log_level
         self.queue = queue.Queue()  # FIFO
         t = threading.Thread(target=self._log_worker)
-        t.daemon = True  # TODO(niklas9): might exit before queue is emptied
+        t.daemon = True
+        # NOTE(niklas9):  * make sure log queue is emptied before exit
+        atexit.register(self._wait_until_queue_is_empty)
         t.start()
 
     def __new__(cls, *args, **kwargs):
@@ -63,12 +70,41 @@ class Log(object):
 
     def _log_worker(self):
         while True:
+            time.sleep(2)
             try:
                 log_level, msg = self.queue.get(block=True)
             except queue.Empty:
                 continue
-            else:
+            finally:
+                # TODO(niklas9):
+                # * move time to _log ? then we get the right time of the
+                #   actual log entry happening.. not when the worker
+                #   thread picks it up..
                 ts = datetime.datetime.utcnow().strftime(self.TIMESTAMP_FMT)
                 msg = self.LOG_FMT % (ts, os.getpid(), log_level, msg)
                 sys.stdout.write(msg)
-                self.queue.task_done()
+                # TODO(niklas9):
+                # * figure out why task_done() is called too many times at
+                #   certain test runs.. and raises ValueError
+                try:
+                    self.queue.task_done()
+                except ValueError:
+                    pass
+
+    def _wait_until_queue_is_empty(self):
+        # TODO(niklas9):
+        # * best practice to exit with some error code 1 if timeout exceeded ?
+        total_time_waited = 0
+        while not self.queue.empty():
+            total_time_waited += self.LOG_FLUSH_TIMEOUT_CHECK
+            if total_time_waited == self.LOG_FLUSH_TIMEOUT_WARN:
+                sys.stdout.write('log queue size is still %d, waiting %d more '
+                                 'secs for log queue to be flushed..\n'
+                                 % (self.queue.qsize(), self.LOG_FLUSH_TIMEOUT))
+            time.sleep(self.LOG_FLUSH_TIMEOUT_CHECK)
+            if total_time_waited >= self.LOG_FLUSH_TIMEOUT:
+                sys.stderr.write('log timeout reached (%ds), exiting even though '
+                                 'there are still %d log entries left to be '
+                                 'synced\n' % (self.LOG_FLUSH_TIMEOUT,
+                                 self.queue.qsize()))
+                break
