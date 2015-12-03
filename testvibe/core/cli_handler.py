@@ -13,8 +13,15 @@ class CLIHandler(object):
     FILENAME_SETTINGS = 'settings.py'
     FILENAME_RUNLIST = 'RUNLIST'
     FILENAME_TESTSUITE = 'example_testsuite.py'
+    FILEMODE_READ = 'r'
+    FILEMODE_WRITE = 'w'
     PLACEHOLDER_NAME = '<Example>'
-    RE_VALID_DIR_NAME = '^[A-Za-z0-9-]+$'
+    RE_VALID_NAME = r'^[A-Za-z0-9]+$'
+    CMD_STARTPROJECT = 'startproject'
+    CMD_ADDTESTSUITE = 'addtestsuite'
+    CMD_ADDTESTGROUP = 'addtestgroup'
+    CMD_RUN = 'run'
+    CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTSUITE, CMD_ADDTESTGROUP)
 
     args = None
 
@@ -22,22 +29,28 @@ class CLIHandler(object):
         self.args = args
 
     def execute(self):
-        if self.args.cmd == 'startproject':
-            self.cmd_startproject(self.args.name)
-        elif self.args.cmd == 'addtestgroup':
-            self.cmd_addtestgroup(self.args.name)
-        elif self.args.cmd == 'addtestsuite':
-            self.cmd_addtestsuite(self.args.name)
-        elif self.args.cmd == 'run':
+        cmd = self.args.cmd
+        if cmd in self.CMDS_WITH_NAME_ARG:
+            name = self.args.name
+            if not self._is_valid_name(name):
+                # NOTE(niklas9):
+                # * for example dashes (-) in names will cause unimportable
+                #   projects in Python
+                sys.stderr.write('error: unsupported characters in name\n')
+                sys.exit(1)
+            if cmd == self.CMD_STARTPROJECT:
+                self.cmd_startproject(self.args.name)
+            elif cmd == self.ADD_TESTSUITE:
+                self.cmd_addtestsuite(self.args.name)
+            elif cmd == self.CMD_ADDTESTGROUP:
+                self.cmd_addtestgroup(self.args.name)
+        elif cmd == self.CMD_RUN:
             self.cmd_run()
 
     def cmd_run(self):
         raise NotImplementedError()
 
     def cmd_startproject(self, name):
-        if not self._is_valid_dir_name(name):
-            sys.stderr.write('error: unsupported characters in project name\n')
-            sys.exit(2)
         self._exit_if_dir_exists(name)
         os.makedirs(name)
         self._copy_file(name, CLIHandler.FILENAME_SETTINGS,
@@ -47,10 +60,6 @@ class CLIHandler(object):
         raise NotImplementedError()
 
     def cmd_addtestgroup(self, name):
-        if not self._is_valid_dir_name(name):
-            sys.stderr.write('error: unsupported characters in test group '
-                             'name\n')
-            sys.exit(2)
         self._exit_if_dir_exists(name)
         os.makedirs(name)
         self._copy_file(name, self.FILENAME_RUNLIST)
@@ -58,11 +67,11 @@ class CLIHandler(object):
 
     @staticmethod
     def _copy_file(dir_name, filename, search=None, replace=None):
-        with open(CLIHandler._get_src(filename), 'r') as f:
+        with open(CLIHandler._get_src(filename), CLIHandler.FILEMODE_READ) as f:
             src_content = f.read()
         if search is not None and replace is not None:
             src_content = src_content.replace(search, replace)
-        with open('%s/%s' % (dir_name, filename), 'w') as f:
+        with open('%s/%s' % (dir_name, filename), CLIHandler.FILEMODE_WRITE) as f:
             f.write(src_content)
 
     @staticmethod
@@ -75,11 +84,11 @@ class CLIHandler(object):
          if os.path.exists(dir_name):
             sys.stderr.write('command error: \'%s\' already exists\n'
                              % os.path.abspath(dir_name))
-            sys.exit(2)
+            sys.exit(1)
 
     @staticmethod
-    def _is_valid_dir_name(s):
-        return re.match(CLIHandler.RE_VALID_DIR_NAME, s) is not None
+    def _is_valid_name(s):
+        return re.match(CLIHandler.RE_VALID_NAME, s) is not None
 
 
 class ArgumentParserWithError(argparse.ArgumentParser):
