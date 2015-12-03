@@ -16,7 +16,7 @@ class CLIHandler(object):
     FILEMODE_READ = 'r'
     FILEMODE_WRITE = 'w'
     PLACEHOLDER_NAME = '<Example>'
-    RE_VALID_NAME = r'^[A-Za-z0-9]+$'
+    RE_VALID_NAME = r'^[A-Za-z0-9_]+$'
     CMD_STARTPROJECT = 'startproject'
     CMD_ADDTESTSUITE = 'addtestsuite'
     CMD_ADDTESTGROUP = 'addtestgroup'
