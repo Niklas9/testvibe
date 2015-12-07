@@ -46,7 +46,7 @@ class Testsuite(asserts.Asserts):
         test_id_method = '%s (%s)' % (test_method.__name__, test_id)
         self.log.info('running testcase %s...' % test_id_method)
         try:
-            test_method(*args, **kwargs)
+            r = test_method(*args, **kwargs)
         # TODO(niklas9):
         # * should catch more specific exceptions here in the future
         #except asserts.AssertionException as e:
@@ -67,6 +67,7 @@ class Testsuite(asserts.Asserts):
                 self.log.error('testcase %s FAILED' % test_id_method)
             self.teardown()
             self.reset_assert_counter()
+        return r
 
     def setup(self):
         pass  # to be overriden by subclass
