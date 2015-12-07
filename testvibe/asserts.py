@@ -10,6 +10,8 @@ class AssertionExceptionGreaterThan(AssertionException):  pass
 class AssertionExceptionGreaterThanOrEqual(AssertionException):  pass
 class AssertionExceptionLesserThan(AssertionException):  pass
 class AssertionExceptionLesserThanOrEqual(AssertionException):  pass
+class AssertionExceptionIsANumber(AssertionException):  pass
+
 
 # TODO(niklas9):
 # * add the error messages in the AssertionException object instead of logging?
@@ -42,6 +44,9 @@ class Asserts(object):
     LOG_LESSER_THAN_OP = '<'
     LOG_LESSER_THAN_OR_EQUAL = 'lesser'
     LOG_LESSER_THAN_OR_EQUAL_OP = '<='
+    LOG_IS_A_NUMBER = 'is a number'
+    LOG_IS_A_NUMBER_OP = '=='
+    LOG_IS_NOT_A_NUMBER_OP = '!='
 
     _total_assert_counter = None
     _success_assert_counter = None
@@ -162,6 +167,18 @@ class Asserts(object):
 
     def assert_lte(self, *args):  return self.assert_lesser_than_or_equal(*args)
     def a_lte(self, *args):  return self.assert_lesser_than_or_equal(*args)
+
+    def assert_is_a_number(self, val):
+        self._incr_total_counter()
+        if not isinstance(val, int) and not isinstance(val, float):
+            msg = self._log_fmt(self.LOG_IS_A_NUMBER,
+                                self.LOG_IS_NOT_A_NUMBER_OP, val, None)
+            raise AssertionExceptionIsANumber(msg)
+        self._log(self.LOG_IS_A_NUMBER, self.LOG_IS_A_NUMBER_OP, val, None)
+        self._incr_success_counter()
+
+    def assert_is_n(self, *args):  return self.assert_is_a_number(*args)
+    def a_is_n(self, *args):  return self.assert_is_a_number(*args)
 
     def _log(self, assert_type, op, obj1, obj2):
         self.log.debug(self._log_fmt(assert_type, op, obj1, obj2))

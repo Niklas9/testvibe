@@ -84,6 +84,15 @@ class BasicTestSuite(testvibe.Testsuite):
     def test_lesser_than_or_equal_alias_2(self, v1, v2):
         self.a_lte(v1, v2)
 
+    def test_is_a_number(self, v):
+        self.assert_is_a_number(v)
+
+    def test_is_a_number_alias1(self, v):
+        self.assert_is_n(v)
+
+    def test_is_a_number_alias2(self, v):
+        self.a_is_n(v)
+
 
 class TestAsserts(object):
 
@@ -265,3 +274,14 @@ class TestAsserts(object):
         self.t.test_equal('A', 'A')
         self.t.reset_assert_counter()
         assert self.t.get_assert_counters() == (0, 0)
+
+    def test_is_a_number(self):
+        self.t.test_is_a_number(9)
+        self.t.test_is_a_number(9.9)
+        self.t.test_is_a_number_alias1(9.5)
+        self.t.test_is_a_number_alias2(10)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsANumber)
+    def test_neg_is_a_number(self):
+        self.t.test_is_a_number('234')
+
