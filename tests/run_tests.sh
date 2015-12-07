@@ -1,3 +1,6 @@
 #!/bin/sh
+
 export PYTHONPATH=../
-nosetests *.py
+
+nosetests --with-coverage --cover-package=testvibe --cover-inclusive \
+          --cover-erase
