@@ -22,6 +22,7 @@ class CLIHandler(object):
     FILENAME_SETTINGS = 'settings.py'
     FILENAME_RUNLIST = 'RUNLIST'
     FILENAME_TESTSUITE = 'example_testsuite.py'
+    INIT_FILENAME = '__init__.py'
     FILEMODE_READ = 'r'
     FILEMODE_WRITE = 'w'
     RUNLIST_COMMENT_PREFIX = '#'
@@ -56,7 +57,7 @@ class CLIHandler(object):
                 sys.exit(1)
             if cmd == self.CMD_STARTPROJECT:
                 self.cmd_startproject(self.args.name)
-            elif cmd == self.ADD_TESTSUITE:
+            elif cmd == self.CMD_ADDTESTSUITE:
                 self.cmd_addtestsuite(self.args.name)
             elif cmd == self.CMD_ADDTESTGROUP:
                 self.cmd_addtestgroup(self.args.name)
@@ -99,6 +100,7 @@ class CLIHandler(object):
         os.makedirs(self.DEFAULT_LOG_DIR % name)
         self._copy_file(name, CLIHandler.FILENAME_SETTINGS,
                        search=CLIHandler.PLACEHOLDER_NAME, replace=name)
+        self._add_init_file(name)
 
     def cmd_addtestsuite(self, name):
         raise NotImplementedError()
@@ -106,8 +108,15 @@ class CLIHandler(object):
     def cmd_addtestgroup(self, name):
         self._exit_if_dir_exists(name)
         os.makedirs(name)
+        self._add_init_file(name)
         self._copy_file(name, self.FILENAME_RUNLIST)
         self._copy_file(name, self.FILENAME_TESTSUITE)
+
+    @staticmethod
+    def _add_init_file(path):
+        p = '%s/%s' % (path, CLIHandler.INIT_FILENAME)
+        with open(p, CLIHandler.FILEMODE_WRITE) as f:
+            pass  # just an empty file
 
     @staticmethod
     def _copy_file(dir_name, filename, search=None, replace=None):
