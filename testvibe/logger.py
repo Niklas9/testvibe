@@ -14,6 +14,11 @@ import time
 LOG_LEVEL_PROD = 1
 LOG_LEVEL_DEBUG = 2
 
+# TODO(niklas9):
+# * add to docs that Log() is a singleton class
+# * make logging format customizable
+
+
 class InvalidLogLevelException(Exception):  pass
 
 class Log(object):

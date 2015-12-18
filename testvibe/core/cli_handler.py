@@ -1,10 +1,19 @@
 
 import argparse
+import importlib
 import os
 import sys
 import re
 
 import testvibe
+
+try:
+    import settings
+except ImportError:
+    # NOTE(niklas9):
+    # * this should only happen during testing, otherwise a global settings
+    #   be importable for every project
+    settings = None
 
 
 class CLIHandler(object):
@@ -15,6 +24,7 @@ class CLIHandler(object):
     FILENAME_TESTSUITE = 'example_testsuite.py'
     FILEMODE_READ = 'r'
     FILEMODE_WRITE = 'w'
+    RUNLIST_COMMENT_PREFIX = '#'
     PLACEHOLDER_NAME = '<Example>'
     RE_VALID_NAME = r'^[A-Za-z0-9_]+$'
     CMD_STARTPROJECT = 'startproject'
@@ -22,11 +32,17 @@ class CLIHandler(object):
     CMD_ADDTESTGROUP = 'addtestgroup'
     CMD_RUN = 'run'
     CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTSUITE, CMD_ADDTESTGROUP)
+    DEFAULT_LOG_DIR = '%s/logs'
+    CURRENT_WORKING_DIR = '.'  # no windoze support :)
 
     args = None
 
     def __init__(self, args):
         self.args = args
+        log_level = testvibe.logger.LOG_LEVEL_DEBUG
+        if settings is not None and not settings.LOG_LEVEL_DEBUG:
+            log_level = testvibe.logger.LOG_LEVEL_PROD
+        self.log = testvibe.logger.Log(log_level=log_level)
 
     def execute(self):
         cmd = self.args.cmd
@@ -48,11 +64,39 @@ class CLIHandler(object):
             self.cmd_run()
 
     def cmd_run(self):
-        raise NotImplementedError()
+        runlists = self._get_runlists()
+        if len(runlists) == 0:
+            sys.stderr.write('no runlists found...\n')
+            sys.exit(1)
+        for rl in runlists:
+            if '/' in rl:
+                tgroup = rl.split('/')[0]
+                tsuites = tsuites = self._parse_runlist(rl)
+                self.log.info('starting test run on testgroup <%s>' % tgroup)
+                self._run_tsuites(tgroup, tsuites)
+            else:
+                tgroup = os.getcwd().split('/')[-1]
+                tsuites = self._parse_runlist(rl)
+                self.log.info('starting test run on all testsuites in current dir')
+                self._run_tsuites(tgroup, tsuites)
+
+    def _run_tsuites(self, tgroup, tsuites):
+        self.log.debug('found %d test suites' % len(tsuites))
+        for tsuite in tsuites:
+            if '/' in tsuite:
+                tsuite = tsuite.split('/')[-1]
+            self.log.debug('initating run on testsuite <%s>' % tsuite)
+            # TODO(niklas9):
+            # * add exception handling for the importing below.. the user can
+            #   enter lots of bad stuff in the runlists.. we should give them a
+            #   hint
+            ts = importlib.import_module('.%s' % tsuite[:-3],
+                                         package=tgroup)
+            ts.ExampleTestsuite().run()
 
     def cmd_startproject(self, name):
         self._exit_if_dir_exists(name)
-        os.makedirs(name)
+        os.makedirs(self.DEFAULT_LOG_DIR % name)
         self._copy_file(name, CLIHandler.FILENAME_SETTINGS,
                        search=CLIHandler.PLACEHOLDER_NAME, replace=name)
 
@@ -90,10 +134,41 @@ class CLIHandler(object):
     def _is_valid_name(s):
         return re.match(CLIHandler.RE_VALID_NAME, s) is not None
 
+    @staticmethod
+    def _get_all_dirs(path):
+        dirs = set()
+        for f in os.listdir(path):
+            if os.path.isdir(f):
+                dirs.add(f)
+        return dirs
+
+    @staticmethod
+    def _get_runlists():
+        runlists = set()
+        if os.path.exists(CLIHandler.FILENAME_RUNLIST):
+            runlists.add(CLIHandler.FILENAME_RUNLIST)
+        else:
+            dirs = CLIHandler._get_all_dirs(CLIHandler.CURRENT_WORKING_DIR)
+            for d in dirs:
+                for f in os.listdir(d):
+                    if f == CLIHandler.FILENAME_RUNLIST:
+                        runlists.add('%s/%s' % (d, f))
+        return runlists
+
+    @staticmethod
+    def _parse_runlist(path):
+        tsuites = list()  # dups are fine, if one wants to rerun tsuites
+        with open(path, CLIHandler.FILEMODE_READ) as f:
+            content = f.read()
+        for line in content.splitlines():
+            if not line.startswith(CLIHandler.RUNLIST_COMMENT_PREFIX):
+                tsuites.append(line)
+        return tuple(tsuites)
+
 
 class ArgumentParserWithError(argparse.ArgumentParser):
 
     def error(self, msg):
         sys.stderr.write('error: %s\n' % msg)
         self.print_help()
-        sys.exit(2)
+        sys.exit(1)

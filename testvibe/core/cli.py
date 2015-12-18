@@ -18,6 +18,10 @@ class CLI(object):
         self.add_cmd_testgroup()
         self.add_cmd_testsuite()
         self.add_cmd_run()
+        # TODO(niklas9):  * respect set path here
+        self.parser.add_argument('-P', '--path',
+                                 help='project path, if not set, tries to work '
+                                      'out of current directory')
         self.parser.add_argument('-V', '--version', action='version',
                         version=testvibe.VERSION,
                         help='show program\'s version number and exit')
