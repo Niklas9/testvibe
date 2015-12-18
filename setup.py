@@ -8,26 +8,32 @@ import setuptools
 # * what does 'zip_safe" mean?
 # * how long can description be? look for inspiration, django etc 
 
+install_requires = ['requests']
+try:
+    import importlib
+except ImportError:
+    install_requires.append('importlib')
+
 setuptools.setup(
     name='testvibe',
     version='0.0.1',
     author='Niklas Andersson',
     author_email='nandersson900@gmail.com',
-    description='High-level system test framework',
+    description=('High-level Python test framework designed for RESTful JSON '
+                 'APIs'),
     url='https://github.com/Niklas9/testvibe',
     zip_safe=False,
-    install_requires=[
-        'requests',
-    ],
+    install_requires=install_requires,
     tests_require=[
         'nose',
+        'coverage'
     ],
     packages=setuptools.find_packages(),
     #test_suite='runtests.runtests',
     include_package_data=True,
     classifiers=[
-        "Intended Audience :: Developers",
-        "Intended Audience :: System Administrators",
-        "Topic :: Software Development"
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Topic :: Software Development'
     ],
 )
