@@ -34,11 +34,12 @@ class CLIHandler(object):
     CMD_ADDTESTGROUP = 'addtestgroup'
     CMD_RUN = 'run'
     CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTGROUP)
-    DEFAULT_LOG_DIR = '%s/logs'
-    CURRENT_WORKING_DIR = '.'  # no windoze support :)
+    DEFAULT_LOG_DIR = 'logs'
 
     args = None
     verbosity = None
+    cwd = None
+
 
     def __init__(self, args):
         self.args = args
@@ -46,8 +47,15 @@ class CLIHandler(object):
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
             log_level = testvibe.logger.LOG_LEVEL_PROD
         self.verbosity = False
-        if 'verbosity' in self.args and self.args.verbosity:
+        if self.args.verbosity:
             self.verbosity = True
+        if self.args.path is None:
+            self.cwd = os.getcwd()
+        else:
+            cwd = self.args.path
+            if cwd.endswith('/'):
+                cwd = cwd [:-1]  # remove trailing /
+            self.cwd = cwd
         self.log = testvibe.logger.Log(log_level=log_level,
                                        use_stdout=self.verbosity)
 
@@ -69,7 +77,7 @@ class CLIHandler(object):
             self.cmd_run()
 
     def cmd_run(self):
-        runlists = self._get_runlists()
+        runlists = self._get_runlists(self.cwd)
         if len(runlists) == 0:
             sys.stderr.write('no runlists found...\n')
             sys.exit(1)
@@ -122,18 +130,22 @@ class CLIHandler(object):
                     tsuite_class_i.test(tc, tsuite_class_i)
 
     def cmd_startproject(self, name):
-        self._exit_if_dir_exists(name)
-        os.makedirs(self.DEFAULT_LOG_DIR % name)
-        self._copy_file(name, CLIHandler.FILENAME_SETTINGS,
-                       search=CLIHandler.PLACEHOLDER_NAME, replace=name)
-        self._add_init_file(name)
+        path = '%s/%s' % (self.cwd, name)
+        self._exit_if_dir_exists(path)
+        self.log.debug('creating project dir <%s>' % path)
+        os.makedirs('%s/%s' % (path, self.DEFAULT_LOG_DIR))
+        self._copy_file(self.cwd, name, CLIHandler.FILENAME_SETTINGS,
+                        search=CLIHandler.PLACEHOLDER_NAME, replace=name)
+        self._add_init_file(path)
 
     def cmd_addtestgroup(self, name):
-        self._exit_if_dir_exists(name)
-        os.makedirs(name)
-        self._add_init_file(name)
-        self._copy_file(name, self.FILENAME_RUNLIST)
-        self._copy_file(name, self.FILENAME_TESTSUITE)
+        path = '%s/%s' % (self.cwd, name)
+        self._exit_if_dir_exists(path)
+        self.log.debug('creating test group dir <%s>' % path)
+        os.makedirs(path)
+        self._add_init_file(path)
+        self._copy_file(self.cwd, name, self.FILENAME_RUNLIST)
+        self._copy_file(self.cwd, name, self.FILENAME_TESTSUITE)
 
     @staticmethod
     def _add_init_file(path):
@@ -142,12 +154,13 @@ class CLIHandler(object):
             pass  # just an empty file
 
     @staticmethod
-    def _copy_file(dir_name, filename, search=None, replace=None):
+    def _copy_file(target_dir, dir_name, filename, search=None, replace=None):
         with open(CLIHandler._get_src(filename), CLIHandler.FILEMODE_READ) as f:
             src_content = f.read()
         if search is not None and replace is not None:
             src_content = src_content.replace(search, replace)
-        with open('%s/%s' % (dir_name, filename), CLIHandler.FILEMODE_WRITE) as f:
+        with open('%s/%s/%s' % (target_dir, dir_name, filename),
+                  CLIHandler.FILEMODE_WRITE) as f:
             f.write(src_content)
 
     @staticmethod
@@ -175,12 +188,12 @@ class CLIHandler(object):
         return dirs
 
     @staticmethod
-    def _get_runlists():
+    def _get_runlists(cwd):
         runlists = set()
         if os.path.exists(CLIHandler.FILENAME_RUNLIST):
             runlists.add(CLIHandler.FILENAME_RUNLIST)
         else:
-            dirs = CLIHandler._get_all_dirs(CLIHandler.CURRENT_WORKING_DIR)
+            dirs = CLIHandler._get_all_dirs(cwd)
             for d in dirs:
                 for f in os.listdir(d):
                     if f == CLIHandler.FILENAME_RUNLIST:

@@ -21,6 +21,8 @@ class CLI(object):
         self.parser.add_argument('-P', '--path',
                                  help='project path, if not set, tries to work '
                                       'out of current directory')
+        self.parser.add_argument('-v', '--verbosity', action='store_true',
+                                 help='verbosity level')
         self.parser.add_argument('-V', '--version', action='version',
                         version=testvibe.VERSION,
                         help='show program\'s version number and exit')
@@ -38,8 +40,6 @@ class CLI(object):
         cmd = self.add_cmd('run', 'initiate test run')
         cmd.add_argument('-p', '--parallel', default=1,
                              help='number of testsuites to run in parallel')
-        cmd.add_argument('-v', '--verbosity', action='store_true',
-                            help='verbosity level')
 
     def add_cmd(self, name, help, args=None):
         if args is None:  args = []
