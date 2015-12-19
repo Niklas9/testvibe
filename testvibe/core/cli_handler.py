@@ -5,6 +5,8 @@ import os
 import sys
 import re
 
+import tqdm
+
 import testvibe
 
 try:
@@ -36,13 +38,18 @@ class CLIHandler(object):
     CURRENT_WORKING_DIR = '.'  # no windoze support :)
 
     args = None
+    verbosity = None
 
     def __init__(self, args):
         self.args = args
         log_level = testvibe.logger.LOG_LEVEL_DEBUG
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
             log_level = testvibe.logger.LOG_LEVEL_PROD
-        self.log = testvibe.logger.Log(log_level=log_level)
+        self.verbosity = False
+        if 'verbosity' in self.args and self.args.verbosity:
+            self.verbosity = True
+        self.log = testvibe.logger.Log(log_level=log_level,
+                                       use_stdout=self.verbosity)
 
     def execute(self):
         cmd = self.args.cmd
@@ -69,7 +76,7 @@ class CLIHandler(object):
         for rl in runlists:
             if '/' in rl:
                 tgroup = rl.split('/')[0]
-                tsuites = tsuites = self._parse_runlist(rl)
+                tsuites = self._parse_runlist(rl)
                 self.log.info('starting test run on testgroup <%s>' % tgroup)
                 self._run_tsuites(tgroup, tsuites)
             else:
@@ -80,7 +87,13 @@ class CLIHandler(object):
 
     def _run_tsuites(self, tgroup, tsuites):
         self.log.debug('found %d test suites' % len(tsuites))
-        for tsuite in tsuites:
+        len_tsuites = len(tsuites)
+        if self.verbosity:
+            iterable = xrange(len_tsuites)
+        else:
+            iterable = tqdm.tqdm(range(len_tsuites), leave=True, desc=tgroup)
+        for i in iterable:
+            tsuite = tsuites[i]
             if '/' in tsuite:
                 tsuite = tsuite.split('/')[-1]
             self.log.debug('initating run on testsuite <%s>' % tsuite)
@@ -90,8 +103,8 @@ class CLIHandler(object):
             #   hint
             ts = importlib.import_module('.%s' % tsuite[:-3],
                                          package=tgroup)
-            tsuites = self._get_all_tsuites(ts)
-            if len(tsuites) == 0:
+            tsuite_classes = self._get_all_tsuite_classes(ts)
+            if len(tsuite_classes) == 0:
                 # TODO(niklas9):
                 # * this is actually too late.. should do some sanity check on
                 #   all runlists before initiating a test run..
@@ -99,14 +112,14 @@ class CLIHandler(object):
                 #   tvctl as well
                 sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
                 sys.exit(1)
-            for tsuite in tsuites:
-                tcs = self._get_all_tcases(tsuite)
-                tsuite_i = tsuite()
+            for tsuite_class in tsuite_classes:
+                tcs = self._get_all_tcases(tsuite_class)
+                tsuite_class_i = tsuite_class()
                 for tc in tcs:
                     # TODO(niklas9):
                     # * I don't get why class instance is second arg below.. should
                     #   replace 'self' so should be the first one?!!
-                    tsuite_i.test(tc, tsuite_i)
+                    tsuite_class_i.test(tc, tsuite_class_i)
 
     def cmd_startproject(self, name):
         self._exit_if_dir_exists(name)
@@ -187,7 +200,7 @@ class CLIHandler(object):
         return tcases
 
     @staticmethod
-    def _get_all_tsuites(module):
+    def _get_all_tsuite_classes(module):
         tsuites = set()
         for o in dir(module):
             co = getattr(module, o)  # co == call object

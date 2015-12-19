@@ -6,13 +6,14 @@ import setuptools
 # * why was 'test_suite' commented out?
 # * what's 'include package data' for?
 # * what does 'zip_safe" mean?
-# * how long can description be? look for inspiration, django etc 
+# * how long can description be? look for inspiration, django etc
+# * look versions on dependencies, including requirements.txt
 
-install_requires = ['requests']
+install_requires = ['requests', 'tqdm']
 try:
     import importlib
 except ImportError:
-    install_requires.append('importlib')
+    install_requires.append('importlib')  # Python 2.6 compatibility
 
 setuptools.setup(
     name='testvibe',
