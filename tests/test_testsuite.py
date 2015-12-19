@@ -22,9 +22,5 @@ class TestSetupTeardown(object):
 
     def test_run_test(self):
         m = lambda:  9
-        x = self.t.test('12345', m)
+        x = self.t.test(m)
         assert x == 9
-
-    @nose.tools.raises(NotImplementedError)
-    def test_run_without_subclassing(self):
-        self.t.run()

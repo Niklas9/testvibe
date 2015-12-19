@@ -16,7 +16,6 @@ class CLI(object):
     def run(self):
         self.add_cmd_startproject()
         self.add_cmd_testgroup()
-        self.add_cmd_testsuite()
         self.add_cmd_run()
         # TODO(niklas9):  * respect set path here
         self.parser.add_argument('-P', '--path',
@@ -33,10 +32,6 @@ class CLI(object):
 
     def add_cmd_testgroup(self):
         self.add_cmd('addtestgroup', 'add a new test group within a project',
-                     args=['name'])
-
-    def add_cmd_testsuite(self):
-        self.add_cmd('addtestsuite', 'add a new test suite within a group',
                      args=['name'])
 
     def add_cmd_run(self):

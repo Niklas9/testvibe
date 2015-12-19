@@ -17,6 +17,7 @@ LOG_LEVEL_DEBUG = 2
 # TODO(niklas9):
 # * add to docs that Log() is a singleton class
 # * make logging format customizable
+# * add option to make it blocking ?
 
 
 class InvalidLogLevelException(Exception):  pass

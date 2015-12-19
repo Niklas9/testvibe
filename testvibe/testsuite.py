@@ -23,6 +23,8 @@ class Testsuite(asserts.Asserts):
     #   arg flag perhaps..
     # * return bad unix exit code when any of the testcases in the
     #   testsuite fails
+    RESERVED_NAMES = ('test', 'setup', 'teardown')
+
     results = None
     log = None
     api = None
@@ -36,15 +38,12 @@ class Testsuite(asserts.Asserts):
         self.log = logger.Log(log_level=log_level)
         self.api = api_controller.APIController(self.log)
 
-    def run(self):
-        raise NotImplementedError()
-
-    def test(self, test_id, test_method, *args, **kwargs):
+    def test(self, test_method, *args, **kwargs):
         # TODO(niklas9):
         # * timers etc here, to measure, for timeout etc
+        # * how to handle test ids ?
         self.setup()
-        test_id_method = '%s (%s)' % (test_method.__name__, test_id)
-        self.log.info('running testcase %s...' % test_id_method)
+        self.log.info('running testcase %s...' % test_method.__name__)
         try:
             r = test_method(*args, **kwargs)
         # TODO(niklas9):
@@ -58,13 +57,13 @@ class Testsuite(asserts.Asserts):
             if success_counter == total_counter:
                 self.log.debug('%d/%d asserts successful in %s'
                                % (success_counter, total_counter,
-                                  test_id_method))
-                self.log.info('testcase %s PASSED' % test_id_method)
+                                  test_method.__name__))
+                self.log.info('testcase %s PASSED' % test_method.__name__)
             else:
                 self.log.warn('%d/%d asserts FAILED in %s'
                               % ((total_counter-success_counter),
-                                  total_counter, test_id_method))
-                self.log.error('testcase %s FAILED' % test_id_method)
+                                  total_counter, test_method.__name__))
+                self.log.error('testcase %s FAILED' % test_method.__name__)
             self.teardown()
             self.reset_assert_counter()
         return r

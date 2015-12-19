@@ -3,17 +3,13 @@ import testvibe
 
 import settings
 
+
 # Create your test suite and test cases here
 
 class ExampleTestsuite(testvibe.Testsuite):
 
-    def setup(self):
-        self.api.set_root_domain(settings.API_ROOT_DOMAIN)
-
-    def run(self):
-        self.test('1234', self.test_example)
-
     def test_example(self):
+        self.api.set_root_domain(settings.API_ROOT_DOMAIN)
         url = ('yql?q=select%20*%20from%20weather.forecast%20where%20w'
                'oeid%20in%20(select%20woeid%20from%20geo.places(1)%20w'
                'here%20text%3D%22nome%2C%20ak%22)&format=json&env=store'
@@ -23,8 +19,3 @@ class ExampleTestsuite(testvibe.Testsuite):
         country = json['query']['results']['channel']['location']['country']
         self.assert_equal(country, 'United States')
         self.assert_not_equal(country, 'Sweden')
-
-
-if __name__ == '__main__':
-    t = ExampleTestsuite()
-    t.run()

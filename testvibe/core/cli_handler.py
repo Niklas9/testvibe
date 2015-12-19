@@ -29,10 +29,9 @@ class CLIHandler(object):
     PLACEHOLDER_NAME = '<Example>'
     RE_VALID_NAME = r'^[A-Za-z0-9_]+$'
     CMD_STARTPROJECT = 'startproject'
-    CMD_ADDTESTSUITE = 'addtestsuite'
     CMD_ADDTESTGROUP = 'addtestgroup'
     CMD_RUN = 'run'
-    CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTSUITE, CMD_ADDTESTGROUP)
+    CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTGROUP)
     DEFAULT_LOG_DIR = '%s/logs'
     CURRENT_WORKING_DIR = '.'  # no windoze support :)
 
@@ -57,8 +56,6 @@ class CLIHandler(object):
                 sys.exit(1)
             if cmd == self.CMD_STARTPROJECT:
                 self.cmd_startproject(self.args.name)
-            elif cmd == self.CMD_ADDTESTSUITE:
-                self.cmd_addtestsuite(self.args.name)
             elif cmd == self.CMD_ADDTESTGROUP:
                 self.cmd_addtestgroup(self.args.name)
         elif cmd == self.CMD_RUN:
@@ -93,7 +90,23 @@ class CLIHandler(object):
             #   hint
             ts = importlib.import_module('.%s' % tsuite[:-3],
                                          package=tgroup)
-            ts.ExampleTestsuite().run()
+            tsuites = self._get_all_tsuites(ts)
+            if len(tsuites) == 0:
+                # TODO(niklas9):
+                # * this is actually too late.. should do some sanity check on
+                #   all runlists before initiating a test run..
+                #   like "validating runlists".. could be a separate cmd to
+                #   tvctl as well
+                sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
+                sys.exit(1)
+            for tsuite in tsuites:
+                tcs = self._get_all_tcases(tsuite)
+                tsuite_i = tsuite()
+                for tc in tcs:
+                    # TODO(niklas9):
+                    # * I don't get why class instance is second arg below.. should
+                    #   replace 'self' so should be the first one?!!
+                    tsuite_i.test(tc, tsuite_i)
 
     def cmd_startproject(self, name):
         self._exit_if_dir_exists(name)
@@ -101,9 +114,6 @@ class CLIHandler(object):
         self._copy_file(name, CLIHandler.FILENAME_SETTINGS,
                        search=CLIHandler.PLACEHOLDER_NAME, replace=name)
         self._add_init_file(name)
-
-    def cmd_addtestsuite(self, name):
-        raise NotImplementedError()
 
     def cmd_addtestgroup(self, name):
         self._exit_if_dir_exists(name)
@@ -163,6 +173,27 @@ class CLIHandler(object):
                     if f == CLIHandler.FILENAME_RUNLIST:
                         runlists.add('%s/%s' % (d, f))
         return runlists
+
+    @staticmethod
+    def _get_all_tcases(cl):
+        tcases = set()
+        reserved_names = testvibe.Testsuite.RESERVED_NAMES
+        for o in dir(cl):
+            if o.startswith('_'):  continue  # no private methods
+            if o in reserved_names:  continue  # skip the reserved method names
+            if o not in cl.__dict__:  continue  # don't consider inherited
+            if not callable(getattr(cl, o)):  continue  # only methods
+            tcases.add(getattr(cl, o))
+        return tcases
+
+    @staticmethod
+    def _get_all_tsuites(module):
+        tsuites = set()
+        for o in dir(module):
+            co = getattr(module, o)  # co == call object
+            if isinstance(co, type) and issubclass(co, testvibe.Testsuite):
+                tsuites.add(co)
+        return tsuites
 
     @staticmethod
     def _parse_runlist(path):
