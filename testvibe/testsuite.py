@@ -1,4 +1,5 @@
 
+import time
 import traceback
 
 import testvibe.api_controller as api_controller
@@ -40,8 +41,10 @@ class Testsuite(asserts.Asserts):
 
     def test(self, test_method, *args, **kwargs):
         # TODO(niklas9):
-        # * timers etc here, to measure, for timeout etc
+        # * add timers for setup, teardown and test separately..
+        # * add timeout option
         # * how to handle test ids ?
+        start_time = time.time()
         self.setup()
         self.log.info('running testcase %s...' % test_method.__name__)
         try:
@@ -66,6 +69,8 @@ class Testsuite(asserts.Asserts):
                 self.log.error('testcase %s FAILED' % test_method.__name__)
             self.teardown()
             self.reset_assert_counter()
+        time_elapsed = time.time() - start_time
+        self.log.debug('time elapsed during test case: %.4fs' % time_elapsed)
         return r
 
     def setup(self):
