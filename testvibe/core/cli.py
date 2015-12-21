@@ -4,6 +4,7 @@ import testvibe.core.cli_handler as cli_handler
 
 
 class CLI(object):
+    """ CLI configuration class """
 
     parser = None
     subparsers = None
@@ -17,7 +18,6 @@ class CLI(object):
         self.add_cmd_startproject()
         self.add_cmd_testgroup()
         self.add_cmd_run()
-        # TODO(niklas9):  * respect set path here
         self.parser.add_argument('-P', '--path',
                                  help='project path, if not set, tries to work '
                                       'out of current directory')
@@ -40,6 +40,8 @@ class CLI(object):
         cmd = self.add_cmd('run', 'initiate test run')
         cmd.add_argument('-p', '--parallel', default=1,
                              help='number of testsuites to run in parallel')
+        # TODO(niklas9):
+        # * add silent option to run, only outputs something if errors
 
     def add_cmd(self, name, help, args=None):
         if args is None:  args = []

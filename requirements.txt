@@ -1,4 +1,5 @@
 coverage
 nose
 requests
+tabulate
 tqdm

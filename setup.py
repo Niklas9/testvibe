@@ -1,6 +1,7 @@
 
 import setuptools
 
+
 # TODO(niklas9):
 # * add more 'classifiers' to get better reach
 # * why was 'test_suite' commented out?
@@ -9,7 +10,7 @@ import setuptools
 # * how long can description be? look for inspiration, django etc
 # * look versions on dependencies, including requirements.txt
 
-install_requires = ['requests', 'tqdm']
+install_requires = ['requests', 'tabulate', 'tqdm']
 try:
     import importlib
 except ImportError:
