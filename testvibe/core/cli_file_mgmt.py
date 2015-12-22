@@ -18,6 +18,8 @@ class CLIFileMgmt(object):
     FILEMODE_WRITE = 'w'
     PLACEHOLDER_NAME = '<Example>'
     DEFAULT_LOG_DIR = 'logs'
+    RUNLIST_COMMENT_PREFIX = '#'
+    PYTHON_SUFFIX = '.py'
 
     log = None
 
@@ -75,3 +77,18 @@ class CLIFileMgmt(object):
                     if f == CLIFileMgmt.FILENAME_RUNLIST:
                         runlists.add(utils.get_path((d, f)))
         return runlists
+
+    @staticmethod
+    def parse_runlist(path):
+        tsuites = list()  # dups are fine, if one wants to rerun tsuites
+        for line in utils.get_file_content(path).splitlines():
+            if not line.startswith(CLIFileMgmt.RUNLIST_COMMENT_PREFIX):
+                # TODO(niklas9):
+                # * what if trailing spaces in the end of runlists? add regexp
+                #   for this instead?
+                if line.endswith(CLIFileMgmt.PYTHON_SUFFIX):
+                    line = line[:-len(CLIFileMgmt.PYTHON_SUFFIX)]
+                if utils.STRING_SLASH in line:
+                    line = line.split(utils.STRING_SLASH)[-1]
+                tsuites.append(line)
+        return tuple(tsuites)

@@ -9,6 +9,7 @@ FILE_ENCODING_UTF8 = 'utf-8'
 STRING_BASE_DIR = '%s/'
 STRING_EMPTY = ''
 STRING_SLASH = '/'
+STRING_UNDERSCORE = '_'
 
 def get_all_dirs(path):
     dirs = set()

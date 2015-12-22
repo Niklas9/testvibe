@@ -38,10 +38,12 @@ class CLI(object):
 
     def add_cmd_run(self):
         cmd = self.add_cmd('run', 'initiate test run')
-        cmd.add_argument('-p', '--parallel', default=1,
-                             help='number of testsuites to run in parallel')
         # TODO(niklas9):
         # * add silent option to run, only outputs something if errors
+        # * add support for running complete testsuites in parallel? or part of
+        #   runlist config?
+        cmd.add_argument('-p', '--parallel', default=1,
+                             help='number of testcases to run in parallel')
 
     def add_cmd(self, name, help, args=None):
         if args is None:  args = []

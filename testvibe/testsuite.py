@@ -1,4 +1,8 @@
 
+try:
+    import queue
+except ImportError:
+    import Queue as queue  # fallback for Python 2.x
 import time
 import traceback
 
@@ -20,26 +24,29 @@ class Testsuite(asserts.Asserts):
     # TODO(niklas9):
     # * add wrappers for performance tests, time limits how long a test is
     #   running before it fails.. add decorator options for this?
-    # * add result metrics.. report continuously or in the end? should be an
-    #   arg flag perhaps..
-    # * return bad unix exit code when any of the testcases in the
-    #   testsuite fails
     RESERVED_NAMES = ('test', 'setup', 'teardown')
+    RESULT_PASSED = 'PASSED'
+    RESULT_FAILED = 'FAILED'
+    RESULT_ERROR = 'ERROR'  # Python errors, setup errors (?)
 
     results = None
     log = None
     api = None
 
     def __init__(self):
-        self.results = []
         asserts.Asserts.__init__(self)
         log_level = logger.LOG_LEVEL_DEBUG
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
             log_level = logger.LOG_LEVEL_PROD
         self.log = logger.Log(log_level=log_level)
         self.api = api_controller.APIController(self.log)
+        self.results = queue.Queue()  # FIFO
 
     def test(self, test_method, *args, **kwargs):
+        # NOTE(niklas9):
+        # * this method needs to be thread safe! depending on the
+        #   parallelization level set by the user, this might be
+        #   executed in parallel by several threads
         # TODO(niklas9):
         # * add timers for setup, teardown and test separately..
         # * add timeout option
@@ -58,11 +65,13 @@ class Testsuite(asserts.Asserts):
         finally:
             success_counter, total_counter = self.get_assert_counters()
             if success_counter == total_counter:
+                result = self.RESULT_PASSED
                 self.log.debug('%d/%d asserts successful in %s'
                                % (success_counter, total_counter,
                                   test_method.__name__))
                 self.log.info('testcase %s PASSED' % test_method.__name__)
             else:
+                result = self.RESULT_FAILED
                 self.log.warn('%d/%d asserts FAILED in %s'
                               % ((total_counter-success_counter),
                                   total_counter, test_method.__name__))
@@ -71,6 +80,9 @@ class Testsuite(asserts.Asserts):
             self.reset_assert_counter()
         time_elapsed = time.time() - start_time
         self.log.debug('time elapsed during test case: %.4fs' % time_elapsed)
+        tcr = TestCaseResult(test_method.__name__, result, success_counter,
+                             total_counter, time_elapsed)
+        self.results.put(tcr)
         return r
 
     def setup(self):
@@ -78,3 +90,19 @@ class Testsuite(asserts.Asserts):
 
     def teardown(self):
         pass  # to be overriden by subclass
+
+
+class TestCaseResult(object):
+
+    def __init__(self, name, result, passed_asserts, total_asserts,
+                 time_elapsed):
+        self.name = name
+        self.result = result
+        self.passed_asserts = passed_asserts
+        self.total_asserts = total_asserts
+        self.time_elapsed = time_elapsed
+
+    def __str__(self):
+        return ('<name: %s, result: %s, asserts %d/%d, time elapsed: %.4fs>'
+                % (self.name, self.result, self.passed_asserts,
+                   self.total_asserts, self.time_elapsed))

@@ -8,3 +8,4 @@ class TestUtils(object):
         m = utils.get_path
         assert m(['1', '2', '3']) == '1/2/3'
         assert m(('tmp', 'test/vibe', 'logs')) == 'tmp/test/vibe/logs'
+        assert m(['/tmp', 'testsuite.py']) == '/tmp/testsuite.py'

@@ -16,6 +16,7 @@ class AssertionExceptionIsANumber(AssertionException):  pass
 # TODO(niklas9):
 # * add the error messages in the AssertionException object instead of logging?
 #   the exception object could potentially take care of logging as well..?
+# * add thread locks to assert counters
 
 # NOTE(niklas9):
 # * this is an abstract class, self.log needs to be set

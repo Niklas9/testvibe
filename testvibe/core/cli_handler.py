@@ -7,6 +7,7 @@ import re
 import testvibe.logger as logger
 import testvibe.core.cli_file_mgmt as cli_file_mgmt
 import testvibe.core.runner as runner
+import testvibe.core.utils as utils
 
 try:
     import settings
@@ -42,7 +43,7 @@ class CLIHandler(object):
             self.cwd = os.getcwd()
         else:
             cwd = self.args.path
-            if cwd.endswith('/'):
+            if cwd.endswith(utils.STRING_SLASH):
                 cwd = cwd [:-1]  # remove trailing /
             self.cwd = cwd
         self.log = logger.Log(log_level=log_level, use_stdout=self.verbosity)
@@ -63,7 +64,7 @@ class CLIHandler(object):
             elif cmd == self.CMD_ADDTESTGROUP:
                 cli_fm.addtestgroup(self.cwd, self.args.name)
         elif cmd == self.CMD_RUN:
-            r = runner.Runner(self.log, self.verbosity)
+            r = runner.Runner(self.log, self.verbosity, self.args.parallel)
             r.execute(self.cwd)
             # TODO(niklas9):
             # * provide runlists to runner.. that should be all it takes

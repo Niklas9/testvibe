@@ -1,7 +1,14 @@
 
 import importlib
 import os
+try:
+    import queue
+except ImportError:
+    import Queue as queue  # fallback for Python 2.x
+import threading
+import sys
 
+import tabulate
 import tqdm
 
 import testvibe
@@ -12,50 +19,40 @@ import testvibe.core.utils as utils
 class Runner(object):
     """ Test runner """
 
-    RUNLIST_COMMENT_PREFIX = '#'
+    RELATIVE_IMPORT_FMT = '.%s'
 
     log = None
     verbosity = None
+    parallel_level = None
+    tcase_queue = None
 
-    def __init__(self, log_handler, verbosity):
+    def __init__(self, log_handler, verbosity, parallel_level):
         self.log = log_handler
         self.verbosity = verbosity
+        self.parallel_level = parallel_level  # no of threads
+        self.tcase_queue = queue.Queue()  # FIFO
 
     def execute(self, cwd):
         runlists = cli_file_mgmt.CLIFileMgmt.get_runlists(cwd)
         if len(runlists) == 0:
             sys.stderr.write('no runlists found...\n')
             sys.exit(1)
-        for rl in runlists:
-            if '/' in rl:
-                tgroup = rl.split('/')[0]
-                tsuites = self._parse_runlist(rl)
-                self.log.info('starting test run on testgroup <%s>' % tgroup)
-                self._run_tsuites(tgroup, tsuites)
-            else:
-                tgroup = os.getcwd().split('/')[-1]
-                tsuites = self._parse_runlist(rl)
-                self.log.info('starting test run on all testsuites in current dir')
-                self._run_tsuites(tgroup, tsuites)
+        for rl_path in runlists:
+            self.log.info('starting test run on from runlist <%s>' % rl_path)
+            tsuites = cli_file_mgmt.CLIFileMgmt.parse_runlist(rl_path)
+            self._run_tsuites(self._get_import_tgroup(rl_path), tsuites)
 
-    def _run_tsuites(self, tgroup, tsuites):
-        self.log.debug('found %d test suites' % len(tsuites))
+    def _run_tsuites(self, import_pkg, tsuites):
         len_tsuites = len(tsuites)
-        if self.verbosity:
-            iterable = xrange(len_tsuites)
-        else:
-            iterable = tqdm.tqdm(range(len_tsuites), leave=True, desc=tgroup)
-        for i in iterable:
-            tsuite = tsuites[i]
-            if '/' in tsuite:
-                tsuite = tsuite.split('/')[-1]
+        self.log.debug('found %d test suites' % len_tsuites)
+        for tsuite in tsuites:
             self.log.debug('initating run on testsuite <%s>' % tsuite)
             # TODO(niklas9):
             # * add exception handling for the importing below.. the user can
             #   enter lots of bad stuff in the runlists.. we should give them a
             #   hint
-            ts = importlib.import_module('.%s' % tsuite[:-3],
-                                         package=tgroup)
+            ts = importlib.import_module(self.RELATIVE_IMPORT_FMT % tsuite,
+                                         package=import_pkg)
             tsuite_classes = self._get_all_tsuite_classes(ts)
             if len(tsuite_classes) == 0:
                 # TODO(niklas9):
@@ -65,29 +62,68 @@ class Runner(object):
                 #   tvctl as well
                 sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
                 sys.exit(1)
-            for tsuite_class in tsuite_classes:
-                tcs = self._get_all_tcases(tsuite_class)
-                tsuite_class_i = tsuite_class()
-                for tc in tcs:
-                    # TODO(niklas9):
-                    # * execute each test case in a separate thread, easier to collect
-                    #   results continuously
-                    # * I don't get why class instance is second arg below.. should
-                    #   replace 'self' so should be the first one?!!
-                    tsuite_class_i.test(tc, tsuite_class_i)
-                    # TODO(niklas9):
-                    # * print results in smth like:
-                    # >>> print tabulate.tabulate([['create_product', '5/5', '3.2s']], headers=['Test case', 'Asserts', 'Time'])
-                    # Test case       Asserts    Time
-                    # --------------  ---------  ------
-                    # create_product  5/5        3.2s
+            self._run_tcases(tsuite_classes)
+
+    def _run_tcases(self, tsuite_classes):
+        for tsuite_class in tsuite_classes:
+            if not self.verbosity:
+                sys.stdout.write('%s\n========================\n'
+                                 % tsuite_class.__name__)
+            results = []
+            tcs = self._get_all_tcases(tsuite_class)
+            tsuite_class_i = tsuite_class()
+            progressb = None
+            if not self.verbosity:
+                progressb = tqdm.trange(len(tcs), leave=False,
+                                        desc='Executing test cases')
+            for tc in tcs:
+                self.tcase_queue.put((tc, tsuite_class_i))
+            # TODO(niklas9):
+            # * honor parallelization level arg here, more threads if needed!
+            t = threading.Thread(target=self._tc_worker, args=[progressb])
+            t.deamon = True  # if someone does Ctrl-C, just die
+            t.start()
+            while t.is_alive():
+                self._report_tcase_results(tsuite_class_i, results)
+            t.join()
+            # NOTE(niklas9):
+            # * make sure results are emptied here before we move on..
+            self._report_tcase_results(tsuite_class_i, results)
+            if not self.verbosity:
+                if progressb is not None:  progressb.close()
+                self._output_tsuite_results(results)
+
+    def _tc_worker(self, progressb):
+        while not self.tcase_queue.empty():
+            try:
+                tcase, tsuite = self.tcase_queue.get(block=False)
+            except queue.Empty:
+                continue
+            finally:
+                # TODO(niklas9):
+                # * I don't get why class instance is second arg below.. should
+                #   replace 'self' so should be the first one?!!
+                tsuite.test(tcase, tsuite)
+                if progressb is not None:  progressb.update()
+                self.tcase_queue.task_done()
+
+    def _report_tcase_results(self, tsuite, results):
+        while not tsuite.results.empty():
+            r = tsuite.results.get(block=False)
+            results.append(r)
+
+    @staticmethod
+    def _get_import_tgroup(rl_path):
+        if utils.STRING_SLASH in rl_path:
+            return rl_path.split(utils.STRING_SLASH)[0]
+        return os.getcwd().split(utils.STRING_SLASH)[-1]
 
     @staticmethod
     def _get_all_tcases(cl):
         tcases = set()
         reserved_names = testvibe.Testsuite.RESERVED_NAMES
         for o in dir(cl):
-            if o.startswith('_'):  continue  # no private methods
+            if o.startswith(utils.STRING_UNDERSCORE):  continue  # no private m
             if o in reserved_names:  continue  # skip the reserved method names
             if o not in cl.__dict__:  continue  # don't consider inherited
             if not callable(getattr(cl, o)):  continue  # only methods
@@ -104,9 +140,12 @@ class Runner(object):
         return tsuites
 
     @staticmethod
-    def _parse_runlist(path):
-        tsuites = list()  # dups are fine, if one wants to rerun tsuites
-        for line in utils.get_file_content(path).splitlines():
-            if not line.startswith(Runner.RUNLIST_COMMENT_PREFIX):
-                tsuites.append(line)
-        return tuple(tsuites)
+    def _output_tsuite_results(results):
+        sys.stdout.write('\n')
+        table = []
+        for r in results:
+            asserts = '%d/%d' % (r.passed_asserts, r.total_asserts)
+            time_elapsed = '%.4fs' % r.time_elapsed
+            table.append([r.name, r.result, asserts, time_elapsed])
+        headers = ['Test case', 'Result', 'Asserts', 'Time elapsed']
+        sys.stdout.write('%s\n\n' % tabulate.tabulate(table, headers=headers))
