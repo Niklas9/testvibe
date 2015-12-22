@@ -1,5 +1,6 @@
 
 import argparse
+import datetime
 import os
 import sys
 import re
@@ -26,6 +27,8 @@ class CLIHandler(object):
     CMD_ADDTESTGROUP = 'addtestgroup'
     CMD_RUN = 'run'
     CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTGROUP)
+    LOG_FILE_FMT = 'runner-%s.log'
+    LOG_FILE_TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%S.%f'
 
     args = None
     verbosity = None
@@ -46,7 +49,11 @@ class CLIHandler(object):
             if cwd.endswith(utils.STRING_SLASH):
                 cwd = cwd [:-1]  # remove trailing /
             self.cwd = cwd
-        self.log = logger.Log(log_level=log_level, use_stdout=self.verbosity)
+        # TODO(niklas9):
+        # * make it a project specific testvibe setting to use log files or
+        #   not, however default should be yes
+        self.log = logger.Log(log_level=log_level, use_stdout=self.verbosity,
+                              log_file=self._setup_log_file(self.cwd))
 
     def execute(self):
         cmd = self.args.cmd
@@ -67,13 +74,20 @@ class CLIHandler(object):
             r = runner.Runner(self.log, self.args.parallel, self.verbosity,
                               self.args.silent)
             r.execute(self.cwd)
-            # TODO(niklas9):
-            # * provide runlists to runner.. that should be all it takes
 
     @staticmethod
     def _is_valid_name(s):
         return re.match(CLIHandler.RE_VALID_NAME, s) is not None
 
+    @staticmethod
+    def _setup_log_file(cwd):
+        time_fmt = CLIHandler.LOG_FILE_TIMESTAMP_FMT
+        time = datetime.datetime.utcnow().strftime(time_fmt)
+        filename = CLIHandler.LOG_FILE_FMT % time
+        paths = [cwd, cli_file_mgmt.CLIFileMgmt.DEFAULT_LOG_DIR]
+        os.makedirs(utils.get_path(paths))
+        paths.append(filename)
+        return utils.get_path(paths)
 
 class ArgumentParserWithError(argparse.ArgumentParser):
 
