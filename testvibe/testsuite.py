@@ -39,7 +39,6 @@ class Testsuite(asserts.Asserts):
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
             log_level = logger.LOG_LEVEL_PROD
         self.log = logger.Log(log_level=log_level)
-        self.api = api_controller.APIController(self.log)
         self.results = queue.Queue()  # FIFO
 
     def test(self, test_method, *args, **kwargs):
@@ -51,9 +50,11 @@ class Testsuite(asserts.Asserts):
         # * add timers for setup, teardown and test separately..
         # * add timeout option
         # * how to handle test ids ?
+        self.api = api_controller.APIController(self.log)
         start_time = time.time()
         self.setup()
         self.log.info('running testcase %s...' % test_method.__name__)
+        result = None
         try:
             r = test_method(*args, **kwargs)
         # TODO(niklas9):
@@ -63,7 +64,7 @@ class Testsuite(asserts.Asserts):
             r = None
             self.log.error(e)
             self.log.debug(traceback.format_exc())
-        finally:
+        else:
             success_counter, total_counter = self.get_assert_counters()
             if success_counter == total_counter:
                 result = self.RESULT_PASSED
@@ -71,7 +72,9 @@ class Testsuite(asserts.Asserts):
                                % (success_counter, total_counter,
                                   test_method.__name__))
                 self.log.info('testcase %s PASSED' % test_method.__name__)
-            else:
+        finally:
+            if result is None:
+                success_counter, total_counter = self.get_assert_counters()
                 result = self.RESULT_FAILED
                 self.log.warn('%d/%d asserts FAILED in %s'
                               % ((total_counter-success_counter),

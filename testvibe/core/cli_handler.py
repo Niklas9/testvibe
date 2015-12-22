@@ -85,7 +85,8 @@ class CLIHandler(object):
         time = datetime.datetime.utcnow().strftime(time_fmt)
         filename = CLIHandler.LOG_FILE_FMT % time
         paths = [cwd, cli_file_mgmt.CLIFileMgmt.DEFAULT_LOG_DIR]
-        os.makedirs(utils.get_path(paths))
+        if not os.path.exists(utils.get_path(paths)):
+            os.makedirs(utils.get_path(paths))
         paths.append(filename)
         return utils.get_path(paths)
 
