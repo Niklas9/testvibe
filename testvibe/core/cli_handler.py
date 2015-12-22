@@ -64,7 +64,8 @@ class CLIHandler(object):
             elif cmd == self.CMD_ADDTESTGROUP:
                 cli_fm.addtestgroup(self.cwd, self.args.name)
         elif cmd == self.CMD_RUN:
-            r = runner.Runner(self.log, self.verbosity, self.args.parallel)
+            r = runner.Runner(self.log, self.args.parallel, self.verbosity,
+                              self.args.silent)
             r.execute(self.cwd)
             # TODO(niklas9):
             # * provide runlists to runner.. that should be all it takes

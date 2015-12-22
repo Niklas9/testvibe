@@ -20,16 +20,21 @@ class Runner(object):
     """ Test runner """
 
     RELATIVE_IMPORT_FMT = '.%s'
+    UNIX_EXIT_CODE_OK = 0
+    UNIX_EXIT_CODE_ERROR = 1
 
     log = None
-    verbosity = None
+    is_verbose = None
+    is_silent = None
     parallel_level = None
     tcase_queue = None
+    exit_code = UNIX_EXIT_CODE_OK
 
-    def __init__(self, log_handler, verbosity, parallel_level):
+    def __init__(self, log_handler, parallel_level, is_verbose, is_silent):
         self.log = log_handler
-        self.verbosity = verbosity
         self.parallel_level = parallel_level  # no of threads
+        self.is_verbose = is_verbose
+        self.is_silent = is_silent
         self.tcase_queue = queue.Queue()  # FIFO
 
     def execute(self, cwd):
@@ -63,17 +68,18 @@ class Runner(object):
                 sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
                 sys.exit(1)
             self._run_tcases(tsuite_classes)
+        sys.exit(self.exit_code)
 
     def _run_tcases(self, tsuite_classes):
         for tsuite_class in tsuite_classes:
-            if not self.verbosity:
+            if not self.is_verbose and not self.is_silent:
                 sys.stdout.write('%s\n========================\n'
                                  % tsuite_class.__name__)
             results = []
             tcs = self._get_all_tcases(tsuite_class)
             tsuite_class_i = tsuite_class()
             progressb = None
-            if not self.verbosity:
+            if not self.is_verbose and not self.is_silent:
                 progressb = tqdm.trange(len(tcs), leave=False,
                                         desc='Executing test cases')
             for tc in tcs:
@@ -89,7 +95,7 @@ class Runner(object):
             # NOTE(niklas9):
             # * make sure results are emptied here before we move on..
             self._report_tcase_results(tsuite_class_i, results)
-            if not self.verbosity:
+            if not self.is_verbose and not self.is_silent:
                 if progressb is not None:  progressb.close()
                 self._output_tsuite_results(results)
 
@@ -111,6 +117,8 @@ class Runner(object):
         while not tsuite.results.empty():
             r = tsuite.results.get(block=False)
             results.append(r)
+            if not r.passed:
+                self.exit_code = self.UNIX_EXIT_CODE_ERROR
 
     @staticmethod
     def _get_import_tgroup(rl_path):

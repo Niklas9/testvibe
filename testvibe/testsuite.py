@@ -60,6 +60,7 @@ class Testsuite(asserts.Asserts):
         # * should catch more specific exceptions here in the future
         #except asserts.AssertionException as e:
         except Exception as e:
+            r = None
             self.log.error(e)
             self.log.debug(traceback.format_exc())
         finally:
@@ -98,6 +99,7 @@ class TestCaseResult(object):
                  time_elapsed):
         self.name = name
         self.result = result
+        self.passed = result == Testsuite.RESULT_PASSED
         self.passed_asserts = passed_asserts
         self.total_asserts = total_asserts
         self.time_elapsed = time_elapsed
