@@ -1,16 +1,10 @@
 
 import setuptools
 
+import testvibe
 
-# TODO(niklas9):
-# * add more 'classifiers' to get better reach
-# * why was 'test_suite' commented out?
-# * what's 'include package data' for?
-# * what does 'zip_safe" mean?
-# * how long can description be? look for inspiration, django etc
-# * look versions on dependencies, including requirements.txt
 
-install_requires = ['requests', 'tabulate', 'tqdm']
+install_requires = ['requests==2.4.3', 'tabulate==0.7.5', 'tqdm==3.4.0']
 try:
     import importlib
 except ImportError:
@@ -18,24 +12,39 @@ except ImportError:
 
 setuptools.setup(
     name='testvibe',
-    version='0.0.1',
+    version=testvibe.VERSION,
     author='Niklas Andersson',
     author_email='nandersson900@gmail.com',
-    description=('High-level Python test framework designed for RESTful JSON '
-                 'APIs'),
+    description=('A high-level Python test framework designed for '
+                 'RESTful JSON APIs'),
+    license='LGPL',
     url='https://github.com/Niklas9/testvibe',
     zip_safe=False,
     install_requires=install_requires,
     tests_require=[
-        'nose',
-        'coverage'
+        'nose==1.3.4',
+        'coverage==4.0.3'
     ],
-    packages=setuptools.find_packages(),
-    #test_suite='runtests.runtests',
+    packages=['testvibe', 'testvibe/core', 'testvibe/default_install'],
     include_package_data=True,
+    scripts=['testvibe/tvctl'],
     classifiers=[
+        'Development Status :: 3 - Alpha'
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-        'Topic :: Software Development'
+        'Programming Language :: Python'
+        'Programming Language :: Python :: 2'
+        'Programming Language :: Python :: 2.6'
+        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3.4'
+        'Programming Language :: Python :: 3.5'
+        'Topic :: Utilities',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Libraries :: Application Frameworks',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Operating System :: POSIX',
+        'Operating System :: MacOS :: MacOS X'
     ],
 )

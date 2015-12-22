@@ -60,7 +60,9 @@ class APIController(object):
 
     def _exec_http_method(self, method, req_m, url, expected, data=None):
         if self.root_domain is not None:
-            full_url = utils.get_path((self.root_domain, url))
+            if not url.startswith(utils.STRING_SLASH):
+                url = utils.STRING_SLASH + url
+            full_url = self.root_domain + url
         else:
             full_url = url
         self.log.debug('executing HTTP %s <%s>...' % (method, full_url))
