@@ -4,6 +4,8 @@ class AssertionExceptionEqual(AssertionException):  pass
 class AssertionExceptionNotEqual(AssertionException):  pass
 class AssertionExceptionIsNull(AssertionException):  pass
 class AssertionExceptionIsNotNull(AssertionException):  pass
+class AssertionExceptionIsNotTrue(AssertionException):  pass
+class AssertionExceptionIsNotFalse(AssertionException):  pass
 class AssertionExceptionIn(AssertionException):  pass
 class AssertionExceptionNotIn(AssertionException):  pass
 class AssertionExceptionGreaterThan(AssertionException):  pass
@@ -18,10 +20,8 @@ class AssertionExceptionIsANumber(AssertionException):  pass
 #   the exception object could potentially take care of logging as well..?
 # * add thread locks to assert counters
 
-# NOTE(niklas9):
-# * this is an abstract class, self.log needs to be set
-
 class Asserts(object):
+    """ Abstract class to handle asserts, self.log needs to be set """
 
     LOG_FMT = 'assert %s (%s) %s (%s)'
     LOG_OBJ_FMT = '%r, %s'
@@ -33,6 +33,10 @@ class Asserts(object):
     LOG_IS_NULL_OP = '=='
     LOG_IS_NOT_NULL = 'is NOT null'
     LOG_IS_NOT_NULL_OP = '!='
+    LOG_TRUE = 'true'
+    LOG_TRUE_OP ='is true'
+    LOG_FALSE = 'false'
+    LOG_FALSE_OP ='is false'
     LOG_IN = 'in'
     LOG_IN_OP = LOG_IN
     LOG_NOT_IN = 'NOT in'
@@ -98,6 +102,26 @@ class Asserts(object):
         self._incr_success_counter()
 
     def a_not_null(self, *args):  return self.assert_not_null(*args)
+
+    def assert_true(self, obj):
+        self._incr_total_counter()
+        if obj is not True:
+            msg = self._log_fmt(self.LOG_TRUE, self.LOG_FALSE_OP, obj, None)
+            raise AssertionExceptionIsNotTrue(msg)
+        self._log(self.LOG_TRUE, self.LOG_TRUE_OP, obj, None)
+        self._incr_success_counter()
+
+    def a_true(self, *args):  return self.assert_true(*args)
+
+    def assert_false(self, obj):
+        self._incr_total_counter()
+        if obj is not False:
+            msg = self._log_fmt(self.LOG_FALSE, self.LOG_TRUE_OP, obj, None)
+            raise AssertionExceptionIsNotFalse(msg)
+        self._log(self.LOG_FALSE, self.LOG_FALSE_OP, obj, None)
+        self._incr_success_counter()
+
+    def a_false(self, *args):  return self.assert_false(*args)
 
     def assert_in(self, val, l):
         self._incr_total_counter()

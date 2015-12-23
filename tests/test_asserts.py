@@ -36,6 +36,18 @@ class BasicTestSuite(testvibe.Testsuite):
     def test_not_null_alias_1(self, v):
         self.a_not_null(v)
 
+    def test_true(self, v):
+        self.assert_true(v)
+
+    def test_true_alias_1(self, v):
+        self.a_true(v)
+
+    def test_false(self, v):
+        self.assert_false(v)
+
+    def test_false_alias_1(self, v):
+        self.a_false(v)
+
     def test_in(self, v, l):
         self.assert_in(v, l)
 
@@ -145,6 +157,30 @@ class TestAsserts(object):
     def test_null(self):
         self.t.test_null(None)
         self.t.test_null_alias_1(None)
+
+    def test_true(self):
+        self.t.test_true(True)
+        self.t.test_true_alias_1(True)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotTrue)
+    def test_neg_true(self):
+        self.t.test_true(False)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotTrue)
+    def test_neg_true_alias_1(self):
+        self.t.test_true_alias_1(False)
+
+    def test_false(self):
+        self.t.test_false(False)
+        self.t.test_false_alias_1(False)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotFalse)
+    def test_neg_false(self):
+        self.t.test_false(True)
+
+    @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNotFalse)
+    def test_neg_false_alias_1(self):
+        self.t.test_false_alias_1(True)
 
     @nose.tools.raises(testvibe.asserts.AssertionExceptionIsNull)
     def test_neg_null(self):
