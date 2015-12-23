@@ -8,6 +8,7 @@ except ImportError:
 import threading
 import sys
 
+import colored
 import tabulate
 import tqdm
 
@@ -22,6 +23,11 @@ class Runner(object):
     RELATIVE_IMPORT_FMT = '.%s'
     UNIX_EXIT_CODE_OK = 0
     UNIX_EXIT_CODE_ERROR = 1
+    TERMINAL_COLOR_GREEN = 'green'
+    TERMINAL_COLOR_RED = 'red'
+    TERMINAL_COLOR_ORANGE = 'orange_1'
+    TERMINAL_COLOR_WHITE = 'white'
+    TERMINAL_COLORING_RESET = 'reset'
 
     log = None
     is_verbose = None
@@ -154,6 +160,19 @@ class Runner(object):
         for r in results:
             asserts = '%d/%d' % (r.passed_asserts, r.total_asserts)
             time_elapsed = '%.4fs' % r.time_elapsed
-            table.append([r.name, r.result, asserts, time_elapsed])
+            table.append([r.name, Runner._output_colored_result(r), asserts,
+                          time_elapsed])
         headers = ['Test case', 'Result', 'Asserts', 'Time elapsed']
         sys.stdout.write('%s\n\n' % tabulate.tabulate(table, headers=headers))
+
+    @staticmethod
+    def _output_colored_result(r):
+        if r.passed:
+            bg_color = Runner.TERMINAL_COLOR_GREEN
+        elif r.failed:
+            bg_color = Runner.TERMINAL_COLOR_RED
+        else:
+            bg_color = Runner.TERMINAL_COLOR_ORANGE
+        return ('%s%s %s %s' % (colored.fg(Runner.TERMINAL_COLOR_WHITE),
+                                colored.bg(bg_color), r.result,
+                                colored.attr(Runner.TERMINAL_COLORING_RESET)))

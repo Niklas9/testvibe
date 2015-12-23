@@ -103,6 +103,7 @@ class TestCaseResult(object):
         self.name = name
         self.result = result
         self.passed = result == Testsuite.RESULT_PASSED
+        self.failed = result == Testsuite.RESULT_FAILED
         self.passed_asserts = passed_asserts
         self.total_asserts = total_asserts
         self.time_elapsed = time_elapsed
