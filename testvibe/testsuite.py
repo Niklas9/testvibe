@@ -57,11 +57,15 @@ class Testsuite(asserts.Asserts):
         result = None
         try:
             r = test_method(*args, **kwargs)
+        except api_controller.APIConnectionException as e:
+            r = self.RESULT_ERROR
+            self.log.error(e)
+            self.log.debug(traceback.format_exc())
         # TODO(niklas9):
         # * should catch more specific exceptions here in the future
         #except asserts.AssertionException as e:
         except Exception as e:
-            r = None
+            result = self.RESULT_FAILED
             self.log.error(e)
             self.log.debug(traceback.format_exc())
         else:
@@ -75,7 +79,6 @@ class Testsuite(asserts.Asserts):
         finally:
             if result is None:
                 success_counter, total_counter = self.get_assert_counters()
-                result = self.RESULT_FAILED
                 self.log.warn('%d/%d asserts FAILED in %s'
                               % ((total_counter-success_counter),
                                   total_counter, test_method.__name__))

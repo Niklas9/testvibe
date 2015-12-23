@@ -20,6 +20,7 @@ LOG_LEVEL_DEBUG = 2
 # * make logging format customizable
 # * add option to make it blocking, no threading
 # * find way to add thread id to each log msg
+# * add coloring with colored package ?
 
 
 class InvalidLogLevelException(Exception):  pass

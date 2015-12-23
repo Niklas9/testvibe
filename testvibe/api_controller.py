@@ -1,5 +1,6 @@
 
 import time
+import traceback
 
 import requests
 
@@ -8,6 +9,7 @@ import testvibe.core.utils as utils
 
 class APIResponseNotAsExpected(Exception):  pass
 class APIResponseCodeNotSuccessException(Exception):  pass
+class APIConnectionException(Exception):  pass
 
 class APIController(object):
 
@@ -95,12 +97,18 @@ class APIController(object):
 
     def _do_http_req(self, req_m, full_url, data, headers):
         start_time = time.time()
-        r = req_m(full_url, data=data, headers=headers)
-        end_time = time.time()
-        time_diff = end_time - start_time
-        self.log.debug('response code %d, fetched %db in %fs'
-                       % (r.status_code, len(r.text), time_diff))
-        return r
+        try:
+            r = req_m(full_url, data=data, headers=headers)
+        except requests.ConnectionError as e:
+            self.log.error(e)
+            self.log.debug(traceback.format_exc())
+            raise APIConnectionException()
+        else:
+            end_time = time.time()
+            time_diff = end_time - start_time
+            self.log.debug('response code %d, fetched %db in %fs'
+                           % (r.status_code, len(r.text), time_diff))
+            return r
 
     def _construct_full_url(self, url):
         if self.root_domain is not None:
