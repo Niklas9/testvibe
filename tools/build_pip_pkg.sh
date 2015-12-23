@@ -2,5 +2,5 @@
 
 cd ..
 python setup.py sdist
-mv dist tools/
-mv testvibe.egg-info tools/
+mv dist testvibe.egg-info tools/
+cd tools
