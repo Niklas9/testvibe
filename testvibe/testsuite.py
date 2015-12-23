@@ -112,6 +112,6 @@ class TestCaseResult(object):
         self.time_elapsed = time_elapsed
 
     def __str__(self):
-        return ('<name: %s, result: %s, asserts %d/%d, time elapsed: %.4fs>'
+        return ('<tcase: %s, result: %s, asserts %d/%d, time elapsed: %.4fs>'
                 % (self.name, self.result, self.passed_asserts,
                    self.total_asserts, self.time_elapsed))
