@@ -54,11 +54,11 @@ class Testsuite(asserts.Asserts):
         start_time = time.time()
         self.setup()
         self.log.info('running testcase %s...' % test_method.__name__)
-        result = None
+        r = None
         try:
             r = test_method(*args, **kwargs)
         except api_controller.APIConnectionException as e:
-            r = self.RESULT_ERROR
+            result = self.RESULT_ERROR
             self.log.error(e)
             self.log.debug(traceback.format_exc())
         # TODO(niklas9):
@@ -77,12 +77,13 @@ class Testsuite(asserts.Asserts):
                                   test_method.__name__))
                 self.log.info('testcase %s PASSED' % test_method.__name__)
         finally:
-            if result is None:
+            if not result == self.RESULT_PASSED:
                 success_counter, total_counter = self.get_assert_counters()
                 self.log.warn('%d/%d asserts FAILED in %s'
                               % ((total_counter-success_counter),
                                   total_counter, test_method.__name__))
-                self.log.error('testcase %s FAILED' % test_method.__name__)
+                self.log.error('testcase %s %s'
+                               % (test_method.__name__, result))
             self.teardown()
             self.reset_assert_counter()
         time_elapsed = time.time() - start_time
