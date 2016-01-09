@@ -40,6 +40,8 @@ class CLI(object):
         cmd = self.add_cmd('run', 'initiate test run')
         cmd.add_argument('-s', '--silent', action='store_true',
                              help='run in silent mode')
+        cmd.add_argument('-r', '--report', action='store_true',
+                         help='report results, configure in detail in settings')
         # TODO(niklas9):
         # * add silent option to run, only outputs something if errors
         # * add support for running complete testsuites in parallel? or part of

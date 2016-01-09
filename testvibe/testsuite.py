@@ -7,6 +7,7 @@ import time
 import traceback
 
 import testvibe.api_controller as api_controller
+import testvibe.core.utils as utils
 import testvibe.asserts as asserts
 import testvibe.logger as logger
 
@@ -40,6 +41,9 @@ class Testsuite(asserts.Asserts):
             log_level = logger.LOG_LEVEL_PROD
         self.log = logger.Log(log_level=log_level)
         self.results = queue.Queue()  # FIFO
+
+    def __str__(self):
+        return utils.trim_cls_name(str(self.__class__))
 
     def test(self, test_method, *args, **kwargs):
         # NOTE(niklas9):

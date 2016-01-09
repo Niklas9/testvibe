@@ -16,6 +16,13 @@ import testvibe
 import testvibe.core.cli_file_mgmt as cli_file_mgmt
 import testvibe.core.utils as utils
 
+# TODO(niklas9):
+# * fix global settings, env variable?
+try:
+    import default_install.settings as settings
+except ImportError:
+    settings = None
+
 
 class Runner(object):
     """ Test runner """
@@ -34,6 +41,7 @@ class Runner(object):
     is_silent = None
     parallel_level = None
     tcase_queue = None
+    reporting_mws = None
     exit_code = UNIX_EXIT_CODE_OK
 
     def __init__(self, log_handler, parallel_level, is_verbose, is_silent):
@@ -42,6 +50,7 @@ class Runner(object):
         self.is_verbose = is_verbose
         self.is_silent = is_silent
         self.tcase_queue = queue.Queue()  # FIFO
+        self.reporting_mws = self._import_reporting_mws()
 
     def execute(self, cwd):
         runlists = cli_file_mgmt.CLIFileMgmt.get_runlists(cwd)
@@ -52,6 +61,9 @@ class Runner(object):
             self.log.info('starting test run on from runlist <%s>' % rl_path)
             tsuites = cli_file_mgmt.CLIFileMgmt.parse_runlist(rl_path)
             self._run_tsuites(self._get_import_tgroup(rl_path), tsuites)
+        for rmw in self.reporting_mws:
+            rmw.finish()
+        sys.exit(self.exit_code)
 
     def _run_tsuites(self, import_pkg, tsuites):
         len_tsuites = len(tsuites)
@@ -74,7 +86,6 @@ class Runner(object):
                 sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
                 sys.exit(1)
             self._run_tcases(tsuite_classes)
-        sys.exit(self.exit_code)
 
     def _run_tcases(self, tsuite_classes):
         for tsuite_class in tsuite_classes:
@@ -123,6 +134,8 @@ class Runner(object):
         while not tsuite.results.empty():
             r = tsuite.results.get(block=False)
             results.append(r)
+            for rmw in self.reporting_mws:
+                rmw.add_test_result(tsuite, r)
             if not r.passed:
                 self.exit_code = self.UNIX_EXIT_CODE_ERROR
 
@@ -176,3 +189,25 @@ class Runner(object):
         return ('%s%s %s %s' % (colored.fg(Runner.TERMINAL_COLOR_WHITE),
                                 colored.bg(bg_color), r.result,
                                 colored.attr(Runner.TERMINAL_COLORING_RESET)))
+
+    @staticmethod
+    def _import_reporting_mws():
+        # TODO(niklas9):
+        # * implement this properly (dynamically, JUnit hardcoded for now)
+        imported_mws = list()
+        try:
+            mws = settings.REPORTING_MIDDLEWARE_CLASSES
+        except NameError:
+            pass
+        except AttributeError:
+            pass
+        else:
+            import testvibe.reporting.junit_xml as junit_xml
+            imported_mws.append(junit_xml.JUnitXMLMiddleware('b234232'))
+        return imported_mws
+        '''
+        else:
+            for mw in mws:
+                reporting_mw = importlib.import_module(mw)
+                imported_mws.append(reporting_mw())
+        '''

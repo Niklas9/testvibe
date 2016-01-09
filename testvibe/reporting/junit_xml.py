@@ -1,6 +1,8 @@
 
 import codecs
 
+import testvibe.reporting.base as rbase
+
 
 # NOTE(niklas9):
 # * I'm by intention not using libxml or any other xml parser here.. don't want
@@ -9,7 +11,7 @@ import codecs
 #     2) we're just writing xml, not parsing.. writing is at least said to be
 #        easier :)
 
-class JUnitXMLMiddleware(object):
+class JUnitXMLMiddleware(rbase.ReportingBase):
 
     OUTPUT_FILENAME_FMT = 'junit-%s.xml'
     OUTPUT_FILE_ENCODING_UTF8 = 'utf-8'
@@ -55,7 +57,7 @@ class JUnitXMLMiddleware(object):
     def _xml_testsuites_start(disabled='', errors='', failures='', tests='',
                               time=''):
         return ('<testsuites disabled="%s" errors="%s" failures="%s" tests="%s"'
-                'time="%s">\n' % (disabled, errors, failures, tests, time))
+                ' time="%s">\n' % (disabled, errors, failures, tests, time))
 
     @staticmethod
     def _xml_testsuites_end():
@@ -75,20 +77,16 @@ class JUnitXMLMiddleware(object):
     @staticmethod
     def _xml_testcase(name, assertions, classname, status, time, err_msg=None,
                       fail_msg=None, sys_out=None, sys_err=None):
-        s = ('\t<testcase name="%s" assertions="%s" classname="%s" '
+        s = ('\t\t<testcase name="%s" assertions="%s" classname="%s" '
              'status="%s" time="%s">\n' % (name, assertions, classname, status,
                                            time))
         if err_msg is not None:
-            s += '\t\t<error message="%s" type="" />\n' % err_msg
+            s += '\t\t\t<error message="%s" type="" />\n' % err_msg
         if fail_msg is not None:
-            s += '\t\t<failure message="%s" type="%s" />\n' % fail_msg
+            s += '\t\t\t<failure message="%s" type="%s" />\n' % fail_msg
         if sys_out is not None:
-            s += '\t\t<system-out>%s</system-out>\n' % sys_out
+            s += '\t\t\t<system-out>%s</system-out>\n' % sys_out
         if sys_err is not None:
-            s += '\t\t<system-err>%s</system-err>\n' % sys_err
+            s += '\t\t\t<system-err>%s</system-err>\n' % sys_err
+        s += '\t\t</testcase>\n'
         return s
-
-    @staticmethod
-    def _xml_testcase_end():
-        return '\t</testcase>\n'
-

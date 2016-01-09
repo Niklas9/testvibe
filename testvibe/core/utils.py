@@ -10,6 +10,8 @@ STRING_BASE_DIR = '%s/'
 STRING_EMPTY = ''
 STRING_SLASH = '/'
 STRING_UNDERSCORE = '_'
+CLS_NAME_PREFIX = '<class \''
+CLS_NAME_SUFFIX_LEN = 2
 
 def get_all_dirs(path):
     dirs = set()
@@ -40,3 +42,6 @@ def copy_file(src, dest, search=None, replace=None):
 def create_empty_file(path):
     with codecs.open(path, FILEMODE_WRITE, encoding=FILE_ENCODING_UTF8) as f:
         pass  # just an empty file
+
+def trim_cls_name(s):
+    return s.replace(CLS_NAME_PREFIX, STRING_EMPTY)[:-CLS_NAME_SUFFIX_LEN]
