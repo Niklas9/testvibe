@@ -12,5 +12,6 @@ class TestUtils(object):
 
     def test_trim_cls_name(self):
         m = utils.trim_cls_name
+        assert m('<class \'class\'>') == 'class'
         assert (m('<class \'project_template.UsersBasic\'>')
                 == 'project_template.UsersBasic')
