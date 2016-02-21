@@ -41,6 +41,8 @@ class APIController(object):
         self.log = log_handler
 
     def set_root_domain(self, root_domain):
+        if root_domain.endswith(utils.STRING_SLASH):
+            root_domain = root_domain[:-len(utils.STRING_SLASH)]
         self.root_domain = root_domain
 
     def get(self, url, expected=None, headers=None):
