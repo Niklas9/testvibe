@@ -2,6 +2,7 @@
 import codecs
 import os
 
+
 CLS_NAME_PREFIX = '<class \''
 CLS_NAME_SUFFIX_LEN = 2
 FILEMODE_READ = 'r'

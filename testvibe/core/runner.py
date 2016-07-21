@@ -109,12 +109,19 @@ class Runner(object):
             while t.is_alive():
                 self._report_tcase_results(tsuite_class_i, results)
             t.join()
+            total_time = self.get_total_time(results)
+            self.log.info('total time elapsed: %.4fs' % total_time)
             # NOTE(niklas9):
             # * make sure results are emptied here before we move on..
             self._report_tcase_results(tsuite_class_i, results)
             if not self.is_verbose and not self.is_silent:
                 if progressb is not None:  progressb.close()
-                self._output_tsuite_results(results)
+                self._output_tsuite_results(results, total_time)
+
+    def get_total_time(self, results):
+        total_time = 0
+        for r in results:  total_time += r.time_elapsed
+        return total_time
 
     def _tc_worker(self, progressb):
         while not self.tcase_queue.empty():
@@ -167,7 +174,7 @@ class Runner(object):
         return tsuites
 
     @staticmethod
-    def _output_tsuite_results(results):
+    def _output_tsuite_results(results, total_time):
         sys.stdout.write('\n')
         table = []
         for r in results:
@@ -177,6 +184,7 @@ class Runner(object):
                           time_elapsed])
         headers = ['Test case', 'Result', 'Asserts', 'Time elapsed']
         sys.stdout.write('%s\n\n' % tabulate.tabulate(table, headers=headers))
+        sys.stdout.write('Total time elapsed: %.4fs\n' % total_time)
 
     @staticmethod
     def _output_colored_result(r):
