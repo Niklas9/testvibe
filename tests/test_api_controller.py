@@ -31,9 +31,47 @@ class TestAPIController(object):
         r = m({'asdf': 'fdsa'})
         assert 'asdf' in r and r['asdf'] == 'fdsa'
 
-    def test_do_http_req(self):
+    def test_get(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c.get('http://asdf.net', req_m=self._fake_req_m)
+        assert r.status_code == 200
+
+    def test_post(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c.post('http://asdf.net', 'asdf', req_m=self._fake_req_m)
+        assert r.status_code == 200
+
+    def test_put(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c.put('http://asdf.net', 'fdsa', req_m=self._fake_req_m)
+        assert r.status_code == 200
+
+    def test_patch(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c.patch('http://asdf.net', 'hugh', req_m=self._fake_req_m)
+        assert r.status_code == 200
+
+    def test_delete(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c.delete('http://asdf.net', req_m=self._fake_req_m)
+        assert r.status_code == 200
+
+    def test_private_do_http_req(self):
         api_c = api_controller.APIController(self.log)
         r = api_c._do_http_req(self._fake_req_m, 'asdf', None, None)
+        assert r.status_code == 200
+
+    def test_private_exec_http_method_get(self):
+        api_c = api_controller.APIController(self.log)
+        _, r = api_c._exec_http_method('GET', self._fake_req_m,
+                                       'http://asdf.net', 200)
+        assert r.status_code == 200
+
+    def test_private_exec_http_method_delete(self):
+        api_c = api_controller.APIController(self.log)
+        json, r = api_c._exec_http_method('DELETE', self._fake_req_m,
+                                          'http://asdf.com', 200)
+        assert json is None
         assert r.status_code == 200
 
     @staticmethod
@@ -44,3 +82,6 @@ class TestAPIController(object):
 
         status_code = 200
         text = 'asdf'
+
+        def json(self):
+            return '{\'msg\': \'%s\'}' % self.text

@@ -6,8 +6,7 @@ import requests
 
 import testvibe.core.utils as utils
 
-
-class APIResponseNotAsExpected(Exception):  pass
+class APIResponseCodeUnexpectedException(Exception):  pass
 class APIResponseCodeNotSuccessException(Exception):  pass
 class APIConnectionException(Exception):  pass
 
@@ -45,28 +44,26 @@ class APIController(object):
             root_domain = root_domain[:-len(utils.STRING_SLASH)]
         self.root_domain = root_domain
 
-    def get(self, url, expected=None, headers=None):
-        return self._exec_http_method(self.HTTP_METHOD_GET, requests.get, url,
+    def get(self, url, expected=None, headers=None, req_m=requests.get):
+        return self._exec_http_method(self.HTTP_METHOD_GET, req_m, url,
                                       expected, headers=headers)
 
-    def post(self, url, data, expected=None, headers=None):
-        return self._exec_http_method(self.HTTP_METHOD_POST, requests.post,
-                                      url, expected, data=data,
-                                      headers=headers)
-
-    def put(self, url, data, expected=None, headers=None):
-        return self._exec_http_method(self.HTTP_METHOD_PUT, requests.put, url,
+    def post(self, url, data, expected=None, headers=None, req_m=requests.post):
+        return self._exec_http_method(self.HTTP_METHOD_POST, req_m, url,
                                       expected, data=data, headers=headers)
 
-    def delete(self, url, expected=None, headers=None):
-        return self._exec_http_method(self.HTTP_METHOD_DELETE, requests.delete,
-                                      url, expected, data=data,
-                                      headers=headers)
+    def put(self, url, data, expected=None, headers=None, req_m=requests.put):
+        return self._exec_http_method(self.HTTP_METHOD_PUT, req_m, url,
+                                      expected, data=data, headers=headers)
 
-    def patch(self, url, data, expected=None, headers=None):
-        return self._exec_http_method(self.HTTP_METHOD_PATCH, requests.patch,
-                                      url, expected, data=data,
-                                      headers=headers)
+    def patch(self, url, data, expected=None, headers=None,
+              req_m=requests.patch):
+        return self._exec_http_method(self.HTTP_METHOD_PATCH, req_m, url,
+                                      expected, data=data, headers=headers)
+
+    def delete(self, url, expected=None, headers=None, req_m=requests.delete):
+        return self._exec_http_method(self.HTTP_METHOD_DELETE, req_m, url,
+                                      expected, headers=headers)
 
     def _exec_http_method(self, method, req_m, url, expected, data=None,
                           headers=None):
@@ -84,7 +81,7 @@ class APIController(object):
         if expected is not None and not expected == r.status_code:
             msg = ('response code was %d, expected %d'
                    % (r.status_code, expected))
-            raise APIResponseNotAsExpected(msg)
+            raise APIResponseCodeUnexpectedException(msg)
         elif (expected is None and
               r.status_code not in self.HTTP_CODE_SUCCESSFUL_RANGE):
             msg = 'response code was %d, expected 2xx' % r.status_code
