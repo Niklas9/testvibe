@@ -9,7 +9,7 @@ Testvibe is a high-level Python test framework designed for RESTful JSON APIs.
 ## Contributing
 
 This project accepts contributions via GitHub pull requests. Please check issues
-first to make sure noone else is working on the same thing.
+first to make sure no one else is working on the same thing.
 
 ## License
 
