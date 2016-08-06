@@ -8,3 +8,4 @@ class TestUtils(object):
         m = utils.is_int
         assert m(9)
         assert not m('asdf')
+        assert not m(None)

@@ -52,7 +52,7 @@ def trim_cls_name(s):
 def is_int(i):
     try:
         int(i)
-    except ValueError, e:
+    except:
         return False
     else:
         return True
