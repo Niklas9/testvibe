@@ -35,6 +35,8 @@ class Runner(object):
     TERMINAL_COLOR_ORANGE = 'orange_1'
     TERMINAL_COLOR_WHITE = 'white'
     TERMINAL_COLORING_RESET = 'reset'
+    DEFAULT_PRINT_ITERATIONS = 1
+    PRINT_DIVIDER = '========================\n'
 
     log = None
     is_verbose = None
@@ -44,28 +46,32 @@ class Runner(object):
     reporting_mws = None
     exit_code = UNIX_EXIT_CODE_OK
 
-    def __init__(self, log_handler, parallel_level, is_verbose, is_silent):
+    def __init__(self, log_handler, parallel_level, is_verbose, is_silent,
+                 iterations):
         self.log = log_handler
         self.parallel_level = parallel_level  # no of threads
         self.is_verbose = is_verbose
         self.is_silent = is_silent
         self.tcase_queue = queue.Queue()  # FIFO
         self.reporting_mws = self._import_reporting_mws()
+        self.iterations = iterations
 
     def execute(self, cwd):
         runlists = cli_file_mgmt.CLIFileMgmt.get_runlists(cwd)
         if len(runlists) == 0:
             sys.stderr.write('no runlists found...\n')
             sys.exit(1)
-        for rl_path in runlists:
-            self.log.info('starting test run on from runlist <%s>' % rl_path)
-            tsuites = cli_file_mgmt.CLIFileMgmt.parse_runlist(rl_path)
-            self._run_tsuites(self._get_import_tgroup(rl_path), tsuites)
-        for rmw in self.reporting_mws:
-            rmw.finish()
+        for i in xrange(self.iterations):
+            self.log.debug('running iteration <%d>' % (i+1))
+            for rl_path in runlists:
+                self.log.info('starting test run on from runlist <%s>' % rl_path)
+                tsuites = cli_file_mgmt.CLIFileMgmt.parse_runlist(rl_path)
+                self._run_tsuites(self._get_import_tgroup(rl_path), tsuites, i)
+            for rmw in self.reporting_mws:
+                rmw.finish()
         sys.exit(self.exit_code)
 
-    def _run_tsuites(self, import_pkg, tsuites):
+    def _run_tsuites(self, import_pkg, tsuites, iteration):
         len_tsuites = len(tsuites)
         self.log.debug('found %d test suites' % len_tsuites)
         for tsuite in tsuites:
@@ -85,13 +91,19 @@ class Runner(object):
                 #   tvctl as well
                 sys.stderr.write('no subclasses of testvibe.Testsuite found\n')
                 sys.exit(1)
-            self._run_tcases(tsuite_classes)
+            self._run_tcases(tsuite_classes, iteration)
 
-    def _run_tcases(self, tsuite_classes):
+    def _run_tcases(self, tsuite_classes, iteration):
         for tsuite_class in tsuite_classes:
             if not self.is_verbose and not self.is_silent:
-                sys.stdout.write('%s\n========================\n'
-                                 % tsuite_class.__name__)
+                if self.iterations > self.DEFAULT_PRINT_ITERATIONS:
+                    if iteration > 0:  sys.stdout.write('\n')
+                    sys.stdout.write('%s (iteration %d/%d)\n%s'
+                                     % (tsuite_class.__name__, iteration+1,
+                                        self.iterations, self.PRINT_DIVIDER))
+                else:
+                    sys.stdout.write('%s\n%s' % (tsuite_class.__name__,
+                                                 self.PRINT_DIVIDER))
             results = []
             tcs = self._get_all_tcases(tsuite_class)
             tsuite_class_i = tsuite_class()
@@ -104,13 +116,14 @@ class Runner(object):
             # TODO(niklas9):
             # * honor parallelization level arg here, more threads if needed!
             t = threading.Thread(target=self._tc_worker, args=[progressb])
-            t.deamon = True  # if someone does Ctrl-C, just die
+            t.deamon = True  # if user does Ctrl-C, just die
             t.start()
             while t.is_alive():
                 self._report_tcase_results(tsuite_class_i, results)
             t.join()
             total_time = self.get_total_time(results)
-            self.log.info('total time elapsed: %.4fs' % total_time)
+            self.log.info('total time elapsed (iter %d/%d): %.4fs'
+                          % (iteration+1, self.iterations, total_time))
             # NOTE(niklas9):
             # * make sure results are emptied here before we move on..
             self._report_tcase_results(tsuite_class_i, results)

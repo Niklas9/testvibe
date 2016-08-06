@@ -29,9 +29,11 @@ class CLIHandler(object):
     CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTGROUP)
     LOG_FILE_FMT = 'runner-%s.log'
     LOG_FILE_TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%S.%f'
+    DEFAULT_ITERATIONS = 1
 
     args = None
     verbosity = None
+    iterations = None
     cwd = None
 
     def __init__(self, args):
@@ -49,6 +51,13 @@ class CLIHandler(object):
             if cwd.endswith(utils.STRING_SLASH):
                 cwd = cwd [:-1]  # remove trailing /
             self.cwd = cwd
+        self.iterations = self.DEFAULT_ITERATIONS
+        # TODO(niklas9):
+        # * should perhaps output smth to the console if given iterations value
+        #   is not an integer
+        if (utils.is_int(self.args.iterations) and
+            not self.args.iterations == self.iterations):
+            self.iterations = int(self.args.iterations)
         # TODO(niklas9):
         # * make it a project specific testvibe setting to use log files or
         #   not, however default should be yes
@@ -72,7 +81,7 @@ class CLIHandler(object):
                 cli_fm.addtestgroup(self.cwd, self.args.name)
         elif cmd == self.CMD_RUN:
             r = runner.Runner(self.log, self.args.parallel, self.verbosity,
-                              self.args.silent)
+                              self.args.silent, self.iterations)
             r.execute(self.cwd)
 
     @staticmethod

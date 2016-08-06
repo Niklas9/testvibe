@@ -20,12 +20,15 @@ class CLI(object):
         self.add_cmd_run()
         self.parser.add_argument('-P', '--path',
                                  help='project path, if not set, tries to work '
-                                      'out of current directory')
+                                      'out of current working directory')
         self.parser.add_argument('-v', '--verbosity', action='store_true',
                                  help='verbosity level')
+        self.parser.add_argument('-i', '--iterations', action='store',
+                                 help=('the number of times the testsuites '
+                                       'should be executed'))
         self.parser.add_argument('-V', '--version', action='version',
-                        version=testvibe.VERSION,
-                        help='show program\'s version number and exit')
+                                 version=testvibe.VERSION,
+                                 help='show program\'s version number and exit')
         ch = cli_handler.CLIHandler(self.parser.parse_args())
         ch.execute()
 
