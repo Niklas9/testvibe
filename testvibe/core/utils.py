@@ -48,3 +48,11 @@ def create_empty_file(path, fh=None):
 
 def trim_cls_name(s):
     return s.replace(CLS_NAME_PREFIX, STRING_EMPTY)[:-CLS_NAME_SUFFIX_LEN]
+
+def is_int(i):
+    try:
+        int(i)
+    except ValueError, e:
+        return False
+    else:
+        return True
