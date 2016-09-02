@@ -1,2 +1,2 @@
-include setup.py README.md LICENSE MANIFEST.in
+include setup.py README.md LICENSE MANIFEST.in testvibe/project_template/RUNLIST
 global-exclude *~
