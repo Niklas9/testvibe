@@ -28,7 +28,7 @@ class CLIHandler(object):
     CMD_RUN = 'run'
     CMDS_WITH_NAME_ARG = (CMD_STARTPROJECT, CMD_ADDTESTGROUP)
     LOG_FILE_FMT = 'runner-%s.log'
-    LOG_FILE_TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%S.%f'
+    LOG_FILE_TIMESTAMP_FMT = '%Y-%m-%dT%H%M%S.%f'
     DEFAULT_ITERATIONS = 1
 
     args = None
