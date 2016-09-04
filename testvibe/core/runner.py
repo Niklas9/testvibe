@@ -162,7 +162,7 @@ class Runner(object):
     @staticmethod
     def _get_import_tgroup(rl_path):
         if utils.STRING_SLASH in rl_path:
-            return rl_path.split(utils.STRING_SLASH)[0]
+            return rl_path.split(utils.STRING_SLASH)[-2]
         return os.getcwd().split(utils.STRING_SLASH)[-1]
 
     @staticmethod

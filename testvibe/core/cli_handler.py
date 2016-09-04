@@ -51,6 +51,7 @@ class CLIHandler(object):
             if cwd.endswith(utils.STRING_SLASH):
                 cwd = cwd [:-1]  # remove trailing /
             self.cwd = cwd
+        sys.path.append(self.cwd)
         self.iterations = self.DEFAULT_ITERATIONS
         # TODO(niklas9):
         # * should perhaps output smth to the console if given iterations value

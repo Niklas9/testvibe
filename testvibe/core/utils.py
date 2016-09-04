@@ -12,13 +12,15 @@ STRING_BASE_DIR = '%s/'
 STRING_EMPTY = ''
 STRING_SLASH = '/'
 STRING_UNDERSCORE = '_'
+EXCUDE_DIRS_PREFIX = '.'
 
 def get_all_dirs(path, listdirs_m=None, isdir_m=None):
     if listdirs_m is None:  listdirs_m = os.listdir
     if isdir_m is None:  isdir_m = os.path.isdir
     dirs = set()
     for f in listdirs_m(path):
-        if isdir_m(f):
+        if f.startswith(EXCUDE_DIRS_PREFIX):  continue
+        if isdir_m(path + STRING_SLASH + f):
             dirs.add(f)
     return dirs
 

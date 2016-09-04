@@ -73,9 +73,10 @@ class CLIFileMgmt(object):
         else:
             dirs = utils.get_all_dirs(cwd)
             for d in dirs:
-                for f in os.listdir(d):
+                fp = cwd + utils.STRING_SLASH + d
+                for f in os.listdir(fp):
                     if f == CLIFileMgmt.FILENAME_RUNLIST:
-                        runlists.add(utils.get_path((d, f)))
+                        runlists.add(utils.get_path(tuple((fp, f))))
         return runlists
 
     @staticmethod
