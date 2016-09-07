@@ -16,8 +16,6 @@ import testvibe
 import testvibe.core.cli_file_mgmt as cli_file_mgmt
 import testvibe.core.utils as utils
 
-# TODO(niklas9):
-# * fix global settings, env variable?
 try:
     import project_template.settings as settings
 except ImportError:
@@ -197,7 +195,8 @@ class Runner(object):
                           time_elapsed])
         headers = ['Test case', 'Result', 'Asserts', 'Time elapsed']
         sys.stdout.write('%s\n\n' % tabulate.tabulate(table, headers=headers))
-        sys.stdout.write('Total time elapsed: %.4fs\n' % total_time)
+        sys.stdout.write('Total time elapsed: %.4fs\n\n'
+                         % total_time)
 
     @staticmethod
     def _output_colored_result(r):

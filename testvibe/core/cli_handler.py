@@ -32,7 +32,7 @@ class CLIHandler(object):
     DEFAULT_ITERATIONS = 1
 
     args = None
-    verbosity = None
+    verbose = None
     iterations = None
     cwd = None
 
@@ -41,9 +41,9 @@ class CLIHandler(object):
         log_level = logger.LOG_LEVEL_DEBUG
         if settings is not None and not settings.LOG_LEVEL_DEBUG:
             log_level = logger.LOG_LEVEL_PROD
-        self.verbosity = False
-        if self.args.verbosity:
-            self.verbosity = True
+        self.verbose = False
+        if self.args.verbose:
+            self.verbose = True
         if self.args.path is None:
             self.cwd = os.getcwd()
         else:
@@ -62,7 +62,7 @@ class CLIHandler(object):
         # TODO(niklas9):
         # * make it a project specific testvibe setting to use log files or
         #   not, however default should be yes
-        self.log = logger.Log(log_level=log_level, use_stdout=self.verbosity,
+        self.log = logger.Log(log_level=log_level, use_stdout=self.verbose,
                               log_file=self._setup_log_file(self.cwd))
 
     def execute(self):
@@ -81,7 +81,7 @@ class CLIHandler(object):
             elif cmd == self.CMD_ADDTESTGROUP:
                 cli_fm.addtestgroup(self.cwd, self.args.name)
         elif cmd == self.CMD_RUN:
-            r = runner.Runner(self.log, self.args.parallel, self.verbosity,
+            r = runner.Runner(self.log, self.args.parallel, self.verbose,
                               self.args.silent, self.iterations)
             r.execute(self.cwd)
 

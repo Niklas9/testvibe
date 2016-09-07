@@ -21,11 +21,6 @@ class CLI(object):
         self.parser.add_argument('-P', '--path',
                                  help='project path, if not set, tries to work '
                                       'out of current working directory')
-        self.parser.add_argument('-v', '--verbosity', action='store_true',
-                                 help='verbosity level')
-        self.parser.add_argument('-i', '--iterations', action='store',
-                                 help=('the number of times the testsuites '
-                                       'should be executed'))
         self.parser.add_argument('-V', '--version', action='version',
                                  version=testvibe.VERSION,
                                  help='show program\'s version number and exit')
@@ -43,10 +38,14 @@ class CLI(object):
         cmd = self.add_cmd('run', 'initiate test run')
         cmd.add_argument('-s', '--silent', action='store_true',
                              help='run in silent mode')
+        cmd.add_argument('-v', '--verbose', action='store_true',
+                         help='run in verbose mode, outputs raw logs')
         cmd.add_argument('-r', '--report', action='store_true',
                          help='report results, configure in detail in settings')
+        cmd.add_argument('-i', '--iterations', action='store',
+                         help=('the number of times the testsuites should be '
+                               'executed'))
         # TODO(niklas9):
-        # * add silent option to run, only outputs something if errors
         # * add support for running complete testsuites in parallel? or part of
         #   runlist config?
         cmd.add_argument('-p', '--parallel', default=1,
