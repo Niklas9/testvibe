@@ -4,8 +4,8 @@ import setuptools
 import testvibe
 
 
-install_requires = ['colored==1.2.2', 'requests==2.10.0', 'tabulate==0.7.5',
-                    'tqdm==4.8.3']
+install_requires = ['colored==1.3.93', 'requests==2.21.0', 'tabulate==0.8.3',
+                    'tqdm==4.31.1']
 try:
     import importlib
 except ImportError:
